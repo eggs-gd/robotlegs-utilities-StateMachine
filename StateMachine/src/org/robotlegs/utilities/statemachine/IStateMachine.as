@@ -8,8 +8,9 @@ package org.robotlegs.utilities.statemachine
 		function onRegister():void;
 		function onRemove():void;
 		
-		function retrieveState(stateName:String):State;
 		function registerState(state:State, initial:Boolean = false):void;
+		function retrieveState(stateName:String):State;
+		function retrieveStateForAction(action:String):State;
 		function removeState(stateName:String):void;
 		
 		function get previousState():State
@@ -19,8 +20,7 @@ package org.robotlegs.utilities.statemachine
 		function get history():Array;
 		function getHistory(offset:int):String;
 		
-		function getStateForAction(action:String):State;
-		function getActionForState(state:String, separator:String = "/"):String;
+		function dispose():void;
 		
 		function toString():String;
 	}

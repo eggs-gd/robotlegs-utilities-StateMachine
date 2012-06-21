@@ -72,5 +72,12 @@ package org.robotlegs.utilities.statemachine
 		 */ 
 		protected var transitions:Object = new Object();
 		
+		/**
+		 * Utils
+		 */
+		public function toString():String
+		{
+			return "State (name: " + name + ")";
+		}
 	}
 }

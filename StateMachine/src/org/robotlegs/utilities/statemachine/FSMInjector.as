@@ -16,7 +16,7 @@ package org.robotlegs.utilities.statemachine
 
 		public function FSMInjector( fsm:XML )
 		{
-			this._fsm = fsm;
+			_fsm = fsm;
 		}
 		
 		/**
@@ -99,12 +99,13 @@ package org.robotlegs.utilities.statemachine
 		protected var _stateList:Array;
 		
 		
-		/*
-		 * xml
+		/**
+		 * XML
+		 * allow to completely change the FSM
 		 */
 		public function set xml(value:XML):void
 		{
-			reset();
+			dispose();
 			
 			_fsm = value;
 		}
@@ -114,10 +115,10 @@ package org.robotlegs.utilities.statemachine
 		}
 		
 		
-		/*
-		 * reset
+		/**
+		 * dispose
 		 */
-		public function reset():void
+		public function dispose():void
 		{
 			_fsm = null;
 			_stateList = null;

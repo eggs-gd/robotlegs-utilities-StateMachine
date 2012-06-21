@@ -10,6 +10,6 @@ package org.robotlegs.utilities.statemachine
 		function set xml(value:XML):void;
 		function get xml():XML;
 		
-		function reset():void;
+		function dispose():void;
 	}
 }

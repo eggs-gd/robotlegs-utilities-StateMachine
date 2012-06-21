@@ -57,7 +57,7 @@ package org.robotlegs.utilities.statemachine
 			}
 			
 			// can't call twice the same action for state
-			var nextState:State = getStateForAction(event.action);
+			var nextState:State = retrieveStateForAction(event.action);
 			if(_currentState && nextState && _currentState.name == nextState.name)
 			{
 				return ;
@@ -93,8 +93,25 @@ package org.robotlegs.utilities.statemachine
 			_states[ state.name ] = state;
 			if ( initial )
 			{
-				_initial = state; 
+				_initial = state;
 			}
+		}
+		
+		/**
+		 * Retrieve a state. 
+		 * <P>
+		 * Utility method for retrieving a State.</P>
+		 * 
+		 * @param stateName
+		 */
+		public function retrieveState(stateName:String):State
+		{
+			return _states[stateName];
+		}
+		
+		public function retrieveStateForAction(action:String):State
+		{
+			return _currentState ? _states[_currentState.getTarget(action)] : null;
 		}
 		
 		/**
@@ -114,18 +131,6 @@ package org.robotlegs.utilities.statemachine
 			}
 			
 			_states[ stateName ] = null;
-		}
-		
-		/**
-		 * Retrieve a state. 
-		 * <P>
-		 * Utility method for retrieving a State.</P>
-		 * 
-		 * @param stateName
-		 */
-		public function retrieveState(stateName:String):State
-		{
-			return _states[stateName];
 		}
 		
 		/**
@@ -217,6 +222,8 @@ package org.robotlegs.utilities.statemachine
 		 * Transitions queue.
 		 * <P>
 		 * Used to be sure to transition to next state after all observers have been notified of the previous state.</P>
+		 * <P>
+		 * To be sure the app has completely transition to a State.</P>
 		 */
 		protected var _hasChanged:Boolean = false;
 		protected var _actionQueue:Array;
@@ -241,7 +248,7 @@ package org.robotlegs.utilities.statemachine
 		}
 		
 		
-		/*
+		/**
 		 * History
 		 */
 		protected var _history:Array;
@@ -291,19 +298,26 @@ package org.robotlegs.utilities.statemachine
 		
 		
 		/**
+		 * dispose
+		 */
+		public function dispose():void
+		{
+			onRemove();
+			
+			_eventDispatcher = null;
+			_initial = null;
+			_previousState = null;
+			_currentState = null;
+			
+			_states = null;
+			_actionQueue = null;
+			_history = null;
+		}
+		
+		
+		/**
 		 * Utils
 		 */
-		public function getStateForAction(action:String):State
-		{
-			return _currentState ? _states[_currentState.getTarget(action)] : null;
-		}
-		public function getActionForState(state:String, separator:String = "/"):String
-		{
-			var stateSplit:Array = state.split(separator);
-			stateSplit[0] = "action";
-			
-			return stateSplit.join(separator);
-		}
 		public function toString():String
 		{
 			return "StateMachine (current State: " + _currentState.name + ")";
