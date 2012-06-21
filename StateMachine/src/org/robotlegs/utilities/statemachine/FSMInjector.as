@@ -95,5 +95,30 @@ package org.robotlegs.utilities.statemachine
 		
 		// The List of State objects
 		protected var _stateList:Array;
+		
+		
+		/*
+		 * xml
+		 */
+		public function set xml(value:XML):void
+		{
+			reset();
+			
+			_fsm = value;
+		}
+		public function get xml():XML
+		{
+			return _fsm;
+		}
+		
+		
+		/*
+		 * reset
+		 */
+		public function reset():void
+		{
+			_fsm = null;
+			_stateList = null;
+		}
 	}
 }

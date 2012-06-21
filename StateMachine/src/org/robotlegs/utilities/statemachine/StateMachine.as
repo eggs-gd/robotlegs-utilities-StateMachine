@@ -20,8 +20,10 @@ package org.robotlegs.utilities.statemachine
 		 */		
 		public function StateMachine(eventDispatcher:IEventDispatcher)
 		{
-			this._eventDispatcher = eventDispatcher;
 			super();
+			
+			_eventDispatcher = eventDispatcher;
+			_history = [];
 		}
 		
 		public function onRegister():void
@@ -31,8 +33,34 @@ package org.robotlegs.utilities.statemachine
 			if ( _initial ) transitionTo( _initial, null );
 		}
 		
+		public function onRemove():void
+		{
+			_eventDispatcher.removeEventListener( StateEvent.ACTION, handleStateAction );
+			_eventDispatcher.removeEventListener( StateEvent.CANCEL, handleStateCancel );
+		}
+		
 		protected function handleStateAction(event:StateEvent):void
 		{
+			// if current state hasn't finished transitionning
+			if(!_hasChanged)
+			{
+				// add it to the queue
+				if(!_actionQueue)
+				{
+					_actionQueue = new Vector.<StateEvent>();
+				}
+				_actionQueue.push(event);
+				return ;
+			}
+			
+			// can't call twice the same action for state
+			var nextState:State = getStateForAction(event.action);
+			if(_currentState && nextState && _currentState.name == nextState.name)
+			{
+				return ;
+			}
+			
+			// transition
 			var newStateTarget:String = _currentState.getTarget( event.action );
 			var newState:State = _states[ newStateTarget ];
 			if( newState )
@@ -73,6 +101,18 @@ package org.robotlegs.utilities.statemachine
 		}
 		
 		/**
+		 * Retrieve a state. 
+		 * <P>
+		 * Utility method for retrieving a State.</P>
+		 * 
+		 * @param stateName
+		 */
+		public function retrieveState(stateName:String):State
+		{
+			return _states[stateName];
+		}
+		
+		/**
 		 * Transitions to the given state from the current state.
 		 * <P>
 		 * Sends the <code>exiting</code> StateEvent for the current state 
@@ -93,6 +133,14 @@ package org.robotlegs.utilities.statemachine
 		 */
 		protected function transitionTo( nextState:State, data:Object=null ):void
 		{
+			_hasChanged = false;
+			
+			if(_currentState)
+			{
+				_previousState = _states[currentStateName];
+				_history.push(_previousState.name);
+			}
+			
 			// Going nowhere?
 			if ( nextState == null ) return;
 			
@@ -126,13 +174,67 @@ package org.robotlegs.utilities.statemachine
 
 			// Notify the app generally that the state changed and what the new state is 
 			_eventDispatcher.dispatchEvent( new StateEvent( StateEvent.CHANGED, _currentState.name));
+			
+			// to be able to listen to the state itself
+			_eventDispatcher.dispatchEvent(new StateEvent(_currentState.name));
+			
+			// changed
+			_hasChanged = true;
+			
+			// queue
+			transitionToQueueState();
+		}
 		
+		/**
+		 * Transitions queue.
+		 * <P>
+		 * Used to be sure to transition to next state after all observers have been notified of the previous state.</P>
+		 */
+		protected var _hasChanged:Boolean = false;
+		protected var _actionQueue:Vector.<StateEvent>;
+		protected function transitionToQueueState():void
+		{
+			// if queue
+			if(_actionQueue && _actionQueue.length > 0)
+			{
+				var stateEvent:StateEvent = _actionQueue.shift();
+				
+				// if currentState has no state for that action
+				// we go to the next one
+				if(!_currentState.getTarget(stateEvent.action))
+				{
+					transitionToQueueState();
+				}
+				else
+				{
+					handleStateAction(stateEvent);
+				}
+			}
+		}
+		
+		
+		/*
+		 * history
+		 */
+		protected var _history:Array;
+		public function get history():Array
+		{
+			return _history;
+		}
+		public function getHistory(offset:int):String
+		{
+			return _history[_history.length - 1 - Math.abs(offset)];
 		}
 				
 		
 		/**
-		 * current State
+		 * States
 		 */
+		protected var _previousState:State;
+		public function get previousState():State
+		{
+			return _previousState;
+		}
 		protected var _currentState:State;
 		public function get currentState():State
 		{
@@ -158,5 +260,21 @@ package org.robotlegs.utilities.statemachine
 		 * The transition has been canceled.
 		 */
 		protected var _canceled:Boolean;
+		
+		
+		/**
+		 * Utils
+		 */
+		public function getStateForAction(action:String):State
+		{
+			return _currentState ? _states[_currentState.getTarget(action)] : null;
+		}
+		public function getActionForState(state:String, separator:String = "/"):String
+		{
+			var stateSplit:Array = state.split(separator);
+			stateSplit[0] = "action";
+			
+			return stateSplit.join(separator);
+		}
 	}
 }
