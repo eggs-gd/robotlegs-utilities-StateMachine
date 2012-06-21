@@ -21,5 +21,7 @@ package org.robotlegs.utilities.statemachine
 		
 		function getStateForAction(action:String):State;
 		function getActionForState(state:String, separator:String = "/"):String;
+		
+		function toString():String;
 	}
 }

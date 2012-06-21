@@ -46,8 +46,10 @@ package org.robotlegs.utilities.statemachine
 		 */
 		protected function get states():Array
 		{
-			if (_stateList == null) {
-				_stateList = new Array();
+			if (!_stateList)
+			{
+				_stateList = [];
+				
 				var stateDefs:XMLList = _fsm..state;
 				for (var i:int; i<stateDefs.length(); i++)
 				{

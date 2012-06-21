@@ -30,7 +30,10 @@ package org.robotlegs.utilities.statemachine
 		{
 			_eventDispatcher.addEventListener( StateEvent.ACTION, handleStateAction );
 			_eventDispatcher.addEventListener( StateEvent.CANCEL, handleStateCancel );
-			if ( _initial ) transitionTo( _initial, null );
+			if ( _initial )
+			{
+				transitionTo( _initial, null );
+			}
 		}
 		
 		public function onRemove():void
@@ -47,7 +50,7 @@ package org.robotlegs.utilities.statemachine
 				// add it to the queue
 				if(!_actionQueue)
 				{
-					_actionQueue = new Vector.<StateEvent>();
+					_actionQueue = [];
 				}
 				_actionQueue.push(event);
 				return ;
@@ -64,7 +67,9 @@ package org.robotlegs.utilities.statemachine
 			var newStateTarget:String = _currentState.getTarget( event.action );
 			var newState:State = _states[ newStateTarget ];
 			if( newState )
+			{
 				transitionTo( newState, event.data );
+			}
 		}
 		
 		protected function handleStateCancel(event:StateEvent):void
@@ -80,9 +85,16 @@ package org.robotlegs.utilities.statemachine
 		 */
 		public function registerState( state:State, initial:Boolean=false ):void
 		{
-			if ( state == null || _states[ state.name ] != null ) return;
+			if ( state == null || _states[ state.name ] != null )
+			{
+				return;
+			}
+			
 			_states[ state.name ] = state;
-			if ( initial ) this._initial = state; 
+			if ( initial )
+			{
+				_initial = state; 
+			}
 		}
 		
 		/**
@@ -96,7 +108,11 @@ package org.robotlegs.utilities.statemachine
 		public function removeState( stateName:String ):void
 		{
 			var state:State = _states[ stateName ];
-			if ( state == null ) return;
+			if ( state == null )
+			{
+				return;
+			}
+			
 			_states[ stateName ] = null;
 		}
 		
@@ -142,13 +158,19 @@ package org.robotlegs.utilities.statemachine
 			}
 			
 			// Going nowhere?
-			if ( nextState == null ) return;
+			if ( nextState == null )
+			{
+				return;
+			}
 			
 			// Clear the cancel flag
 			_canceled = false;
 				
 			// Exit the current State 
-			if ( _currentState && _currentState.exiting ) _eventDispatcher.dispatchEvent( new StateEvent( _currentState.exiting, null, data ));
+			if ( _currentState && _currentState.exiting )
+			{
+				_eventDispatcher.dispatchEvent( new StateEvent( _currentState.exiting, null, data ));
+			}
 			
 			// Check to see whether the exiting guard has been canceled
 			if ( _canceled ) {
@@ -157,20 +179,26 @@ package org.robotlegs.utilities.statemachine
 			}
 			
 			// Enter the next State 
-			if ( nextState.entering ) _eventDispatcher.dispatchEvent( new StateEvent( nextState.entering, null, data )); 
-			
+			if ( nextState.entering )
+			{
+				_eventDispatcher.dispatchEvent( new StateEvent( nextState.entering, null, data )); 
+			}
 			
 			// Check to see whether the entering guard has been canceled
-			if ( _canceled ) {
+			if ( _canceled )
+			{
 				_canceled = false;
 				return;
 			}
-			//
+			
 			// change the current state only when both guards have been passed
 			_currentState = nextState;
 			
 			// Send the notification configured to be sent when this specific state becomes current 
-			if ( nextState.changed ) _eventDispatcher.dispatchEvent( new StateEvent( _currentState.changed, null, data ));  
+			if ( nextState.changed )
+			{
+				_eventDispatcher.dispatchEvent( new StateEvent( _currentState.changed, null, data ));  
+			}
 
 			// Notify the app generally that the state changed and what the new state is 
 			_eventDispatcher.dispatchEvent( new StateEvent( StateEvent.CHANGED, _currentState.name));
@@ -191,7 +219,7 @@ package org.robotlegs.utilities.statemachine
 		 * Used to be sure to transition to next state after all observers have been notified of the previous state.</P>
 		 */
 		protected var _hasChanged:Boolean = false;
-		protected var _actionQueue:Vector.<StateEvent>;
+		protected var _actionQueue:Array;
 		protected function transitionToQueueState():void
 		{
 			// if queue
@@ -214,7 +242,7 @@ package org.robotlegs.utilities.statemachine
 		
 		
 		/*
-		 * history
+		 * History
 		 */
 		protected var _history:Array;
 		public function get history():Array
@@ -275,6 +303,10 @@ package org.robotlegs.utilities.statemachine
 			stateSplit[0] = "action";
 			
 			return stateSplit.join(separator);
+		}
+		public function toString():String
+		{
+			return "StateMachine (current State: " + _currentState.name + ")";
 		}
 	}
 }
