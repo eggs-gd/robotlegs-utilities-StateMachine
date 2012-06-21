@@ -9,14 +9,14 @@ package org.robotlegs.utilities.statemachine
 	import flash.events.IEventDispatcher;
 	
 
-	public class FSMInjector
+	public class FSMInjector implements IFSMInjector
 	{
 		[Inject(name='mvcsEventDispatcher')]
 		public var eventDispatcher:IEventDispatcher;
 
 		public function FSMInjector( fsm:XML )
 		{
-			this.fsm = fsm;
+			this._fsm = fsm;
 		}
 		
 		/**
@@ -26,7 +26,6 @@ package org.robotlegs.utilities.statemachine
 		 */
 		public function inject(stateMachine:StateMachine):void
 		{
-			
 			// Register all the states with the StateMachine
 			for each ( var state:State in states )
 			{ 
@@ -47,17 +46,17 @@ package org.robotlegs.utilities.statemachine
 		 */
 		protected function get states():Array
 		{
-			if (stateList == null) {
-				stateList = new Array();
-				var stateDefs:XMLList = fsm..state;
+			if (_stateList == null) {
+				_stateList = new Array();
+				var stateDefs:XMLList = _fsm..state;
 				for (var i:int; i<stateDefs.length(); i++)
 				{
 					var stateDef:XML = stateDefs[i];
 					var state:State = createState( stateDef );
-					stateList.push(state);
+					_stateList.push(state);
 				}
 			} 
-			return stateList;
+			return _stateList;
 		}
 
 		/**
@@ -87,14 +86,14 @@ package org.robotlegs.utilities.statemachine
 		 */
 		protected function isInitial( stateName:String ):Boolean
 		{
-			var initial:String = XML(fsm.@initial).toString();
+			var initial:String = XML(_fsm.@initial).toString();
 			return (stateName == initial);
 		}
 		
 		// The XML FSM definition
-		protected var fsm:XML;
+		protected var _fsm:XML;
 		
 		// The List of State objects
-		protected var stateList:Array;
+		protected var _stateList:Array;
 	}
 }

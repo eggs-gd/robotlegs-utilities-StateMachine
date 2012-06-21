@@ -8,9 +8,9 @@ package org.robotlegs.utilities.statemachine
 {
 	import flash.events.IEventDispatcher;
 	
-	public class StateMachine
+	public class StateMachine implements IStateMachine
 	{
-		public var eventDispatcher:IEventDispatcher;
+		protected var _eventDispatcher:IEventDispatcher;
 		
 		/**
 		 *  StateMachine Constructor
@@ -20,28 +20,28 @@ package org.robotlegs.utilities.statemachine
 		 */		
 		public function StateMachine(eventDispatcher:IEventDispatcher)
 		{
-			this.eventDispatcher = eventDispatcher;
+			this._eventDispatcher = eventDispatcher;
 			super();
 		}
 		
 		public function onRegister():void
 		{
-			eventDispatcher.addEventListener( StateEvent.ACTION, handleStateAction );
-			eventDispatcher.addEventListener( StateEvent.CANCEL, handleStateCancel );
-			if ( initial ) transitionTo( initial, null );
+			_eventDispatcher.addEventListener( StateEvent.ACTION, handleStateAction );
+			_eventDispatcher.addEventListener( StateEvent.CANCEL, handleStateCancel );
+			if ( _initial ) transitionTo( _initial, null );
 		}
 		
 		protected function handleStateAction(event:StateEvent):void
 		{
 			var newStateTarget:String = _currentState.getTarget( event.action );
-			var newState:State = states[ newStateTarget ];
+			var newState:State = _states[ newStateTarget ];
 			if( newState )
 				transitionTo( newState, event.data );
 		}
 		
 		protected function handleStateCancel(event:StateEvent):void
 		{
-			canceled = true;
+			_canceled = true;
 		}
 
 		/**
@@ -52,9 +52,9 @@ package org.robotlegs.utilities.statemachine
 		 */
 		public function registerState( state:State, initial:Boolean=false ):void
 		{
-			if ( state == null || states[ state.name ] != null ) return;
-			states[ state.name ] = state;
-			if ( initial ) this.initial = state; 
+			if ( state == null || _states[ state.name ] != null ) return;
+			_states[ state.name ] = state;
+			if ( initial ) this._initial = state; 
 		}
 		
 		/**
@@ -67,9 +67,9 @@ package org.robotlegs.utilities.statemachine
 		 */
 		public function removeState( stateName:String ):void
 		{
-			var state:State = states[ stateName ];
+			var state:State = _states[ stateName ];
 			if ( state == null ) return;
-			states[ stateName ] = null;
+			_states[ stateName ] = null;
 		}
 		
 		/**
@@ -97,24 +97,24 @@ package org.robotlegs.utilities.statemachine
 			if ( nextState == null ) return;
 			
 			// Clear the cancel flag
-			canceled = false;
+			_canceled = false;
 				
 			// Exit the current State 
-			if ( _currentState && _currentState.exiting ) eventDispatcher.dispatchEvent( new StateEvent( _currentState.exiting, null, data ));
+			if ( _currentState && _currentState.exiting ) _eventDispatcher.dispatchEvent( new StateEvent( _currentState.exiting, null, data ));
 			
 			// Check to see whether the exiting guard has been canceled
-			if ( canceled ) {
-				canceled = false;
+			if ( _canceled ) {
+				_canceled = false;
 				return;
 			}
 			
 			// Enter the next State 
-			if ( nextState.entering ) eventDispatcher.dispatchEvent( new StateEvent( nextState.entering, null, data )); 
+			if ( nextState.entering ) _eventDispatcher.dispatchEvent( new StateEvent( nextState.entering, null, data )); 
 			
 			
 			// Check to see whether the entering guard has been canceled
-			if ( canceled ) {
-				canceled = false;
+			if ( _canceled ) {
+				_canceled = false;
 				return;
 			}
 			//
@@ -122,16 +122,22 @@ package org.robotlegs.utilities.statemachine
 			_currentState = nextState;
 			
 			// Send the notification configured to be sent when this specific state becomes current 
-			if ( nextState.changed ) eventDispatcher.dispatchEvent( new StateEvent( _currentState.changed, null, data ));  
+			if ( nextState.changed ) _eventDispatcher.dispatchEvent( new StateEvent( _currentState.changed, null, data ));  
 
 			// Notify the app generally that the state changed and what the new state is 
-			eventDispatcher.dispatchEvent( new StateEvent( StateEvent.CHANGED, _currentState.name));
+			_eventDispatcher.dispatchEvent( new StateEvent( StateEvent.CHANGED, _currentState.name));
 		
 		}
 				
 		
-		private var _currentState:State;
-
+		/**
+		 * current State
+		 */
+		protected var _currentState:State;
+		public function get currentState():State
+		{
+			return _currentState;
+		}
 		public function get currentStateName():String
 		{
 			return _currentState.name.valueOf();
@@ -141,16 +147,16 @@ package org.robotlegs.utilities.statemachine
 		/**
 		 * Map of States objects by name.
 		 */
-		protected var states:Object = new Object();
+		protected var _states:Object = new Object();
 		
 		/**
 		 * The initial state of the FSM.
 		 */
-		protected var initial:State;
+		protected var _initial:State;
 		
 		/**
 		 * The transition has been canceled.
 		 */
-		protected var canceled:Boolean;
+		protected var _canceled:Boolean;
 	}
 }
