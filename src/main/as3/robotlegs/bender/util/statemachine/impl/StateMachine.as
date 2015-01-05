@@ -87,7 +87,7 @@ package robotlegs.bender.util.statemachine.impl {
             }
 
             // can't call twice the same action for state
-            var nextState:State = retrieveStateForAction(event.action);
+            var nextState:State = getStateForAction(event.action);
             if (_currentState && nextState && _currentState.name == nextState.name) {
                 return;
             }
@@ -128,11 +128,11 @@ package robotlegs.bender.util.statemachine.impl {
          *
          * @param stateName
          */
-        public function retrieveState(stateName:String):State {
+        public function getStateByName(stateName:String):State {
             return _states[stateName];
         }
 
-        public function retrieveStateForAction(action:String):State {
+        public function getStateForAction(action:String):State {
             return _currentState ? _states[_currentState.getTarget(action)] : null;
         }
 

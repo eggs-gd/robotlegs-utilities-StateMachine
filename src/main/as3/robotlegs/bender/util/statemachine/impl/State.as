@@ -12,6 +12,7 @@ package robotlegs.bender.util.statemachine.impl {
      * Defines a State.
      */
     public class State implements IState {
+
         private var _name:String;
         public function get name():String { return _name; }
 

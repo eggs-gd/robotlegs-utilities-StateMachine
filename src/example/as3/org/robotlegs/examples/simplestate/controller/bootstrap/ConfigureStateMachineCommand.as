@@ -1,7 +1,7 @@
 package org.robotlegs.examples.simplestate.controller.bootstrap
 {
-	import org.robotlegs.examples.simplestate.StateMachineBootstrapConstants;
-	import org.robotlegs.mvcs.Command;
+
+	import robotlegs.bender.bundles.mvcs.Command;
 	import robotlegs.bender.util.fsmInjector.impl.FSMInjector;
 	import robotlegs.bender.util.statemachine.impl.StateEvent;
 	import robotlegs.bender.util.statemachine.impl.StateMachine;

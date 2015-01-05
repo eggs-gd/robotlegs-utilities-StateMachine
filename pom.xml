@@ -12,7 +12,7 @@
     <properties>
         <flexmojos.version>6.0.1</flexmojos.version>
         <flex.version>4.6.0.23201</flex.version>
-        <flashplayer.version>10.1</flashplayer.version>
+        <flash.version>10.1</flash.version>
     </properties>
 
     <dependencies>
@@ -20,7 +20,7 @@
         <dependency>
             <groupId>com.adobe.flash.framework</groupId>
             <artifactId>playerglobal</artifactId>
-            <version>${flashplayer.version}</version>
+            <version>${flash.version}</version>
             <type>swc</type>
         </dependency>
 
@@ -103,7 +103,7 @@
                 <configuration>
                     <as3>true</as3>
                     <storepass/>
-                    <targetPlayer>${flashplayer.version}</targetPlayer>
+                    <targetPlayer>${flash.version}</targetPlayer>
                     <compilerWarnings>
                         <warn-no-constructor>false</warn-no-constructor>
                     </compilerWarnings>

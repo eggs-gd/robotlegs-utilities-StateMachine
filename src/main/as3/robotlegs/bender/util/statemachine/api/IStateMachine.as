@@ -6,17 +6,6 @@ package robotlegs.bender.util.statemachine.api {
      * @author Benoit vinay - ben@benoitvinay.com
      */
     public interface IStateMachine {
-        function onRegister():void;
-
-        function onRemove():void;
-
-        function registerState(state:State, initial:Boolean = false):void;
-
-        function retrieveState(stateName:String):State;
-
-        function retrieveStateForAction(action:String):State;
-
-        function removeState(stateName:String):void;
 
         function get previousState():State
 
@@ -26,10 +15,21 @@ package robotlegs.bender.util.statemachine.api {
 
         function get history():Array;
 
+
+        function onRegister():void;
+
+        function onRemove():void;
+
+        function registerState(state:State, initial:Boolean = false):void;
+
+        function getStateByName(stateName:String):State;
+
+        function getStateForAction(action:String):State;
+
+        function removeState(stateName:String):void;
+
         function getHistory(offset:int):String;
 
         function dispose():void;
-
-        function toString():String;
     }
 }
