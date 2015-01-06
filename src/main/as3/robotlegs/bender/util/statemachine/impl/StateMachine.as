@@ -32,7 +32,7 @@ package robotlegs.bender.util.statemachine.impl {
 
         protected var _currentState:IState;
         public function get currentState():IState { return _currentState; }
-        public function get currentStateName():String { return _currentState.name.valueOf(); }
+        public function get currentStateName():String { return _currentState.name; }
         //endregion ===========================================================
 
         protected var _eventDispatcher:IEventDispatcher;

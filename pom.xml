@@ -31,6 +31,7 @@
             <type>swc</type>
         </dependency>
 
+        <!-- Scope TEST -->
         <!-- FlexSdk needed for mx package -->
         <dependency>
             <groupId>com.adobe.flex.framework</groupId>
@@ -45,8 +46,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
-        <!-- Scope TEST -->
         <!-- Unittests support -->
         <dependency>
             <groupId>net.flexmojos.oss</groupId>
@@ -54,16 +53,6 @@
             <version>${flexmojos.version}</version>
             <type>swc</type>
             <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.adobe.flex.framework.air</groupId>
-                    <artifactId>airframework</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.adobe.flex.framework.air</groupId>
-                    <artifactId>air-framework</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <!-- Flexunit is external for flexunit-support-->
         <dependency>
@@ -109,6 +98,16 @@
                     </compilerWarnings>
                 </configuration>
 
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>sources</goal>
+                        </goals>
+                    </execution>
+                </executions>
+
                 <dependencies>
                     <dependency>
                         <groupId>com.adobe.flex</groupId>
@@ -118,37 +117,20 @@
                     </dependency>
                 </dependencies>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>2.3</version>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
 
     <repositories>
         <repository>
+            <id>artifactory</id>
+            <name>artifactory</name>
+            <url>http://artifactory.corp/artifactory/repo</url>
+        </repository>
+
+        <repository>
             <id>flex-mojos-repository</id>
             <name>flex-mojos-repository</name>
             <url>https://oss.sonatype.org/content/repositories/releases</url>
-        </repository>
-        <repository>
-            <id>artifactory-ext-release</id>
-            <name>artifactory-ext-release</name>
-            <url>http://artifactory.corp/artifactory/ext-release-local/</url>
-        </repository>
-        <repository>
-            <id>artifactory-ext-snapshot</id>
-            <name>artifactory-ext-snapshot</name>
-            <url>http://artifactory.corp/artifactory/ext-snapshot-local/</url>
         </repository>
     </repositories>
 
@@ -158,8 +140,8 @@
             <url>https://oss.sonatype.org/content/repositories/releases</url>
         </pluginRepository>
         <pluginRepository>
-            <id>artifactory-ext</id>
-            <url>http://artifactory.corp/artifactory/ext-release-local/</url>
+            <id>artifactory</id>
+            <url>http://artifactory.corp/artifactory/repo</url>
         </pluginRepository>
     </pluginRepositories>
 
