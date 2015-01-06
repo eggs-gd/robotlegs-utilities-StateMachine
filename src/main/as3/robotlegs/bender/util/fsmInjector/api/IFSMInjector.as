@@ -1,5 +1,5 @@
 package robotlegs.bender.util.fsmInjector.api {
-    import robotlegs.bender.util.statemachine.impl.StateMachine;
+    import robotlegs.bender.util.statemachine.api.IStateMachine;
 
 
     /**
@@ -19,7 +19,7 @@ package robotlegs.bender.util.fsmInjector.api {
          * <P>
          * Creates the <code>StateMachine</code> instance, registers all the states
          */
-        function inject(stateMachine:StateMachine):void;
+        function inject(stateMachine:IStateMachine):void;
 
         /**
          * dispose

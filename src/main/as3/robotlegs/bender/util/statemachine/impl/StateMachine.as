@@ -7,29 +7,33 @@
 package robotlegs.bender.util.statemachine.impl {
     import flash.events.IEventDispatcher;
 
+    import robotlegs.bender.util.statemachine.api.IState;
+
     import robotlegs.bender.util.statemachine.api.IStateMachine;
 
 
     public class StateMachine implements IStateMachine {
 
-        /**
-         * History
-         */
-        protected var _history:Array;
-        public function get history():Array { return _history; }
+        //=====================================================================
+        //region  History
+        //=====================================================================
+        protected var _history:Vector.<String>;
+        public function get history():Vector.<String> { return _history; }
         public function getHistory(offset:int):String {
             return _history[_history.length - 1 - Math.abs(offset)];
         }
+        //endregion ===========================================================
 
-        /**
-         * States
-         */
-        protected var _previousState:State;
-        public function get previousState():State { return _previousState; }
+        //=====================================================================
+        //region  States
+        //=====================================================================
+        protected var _previousState:IState;
+        public function get previousState():IState { return _previousState; }
 
-        protected var _currentState:State;
-        public function get currentState():State { return _currentState; }
+        protected var _currentState:IState;
+        public function get currentState():IState { return _currentState; }
         public function get currentStateName():String { return _currentState.name.valueOf(); }
+        //endregion ===========================================================
 
         protected var _eventDispatcher:IEventDispatcher;
 
@@ -41,7 +45,7 @@ package robotlegs.bender.util.statemachine.impl {
         /**
          * The initial state of the FSM.
          */
-        protected var _initial:State;
+        protected var _initial:IState;
 
         /**
          * The transition has been canceled.
@@ -59,7 +63,7 @@ package robotlegs.bender.util.statemachine.impl {
          */
         public function StateMachine(eventDispatcher:IEventDispatcher) {
             _eventDispatcher = eventDispatcher;
-            _history = [];
+            _history = new <String>[];
         }
 
         public function onRegister():void {
@@ -87,7 +91,7 @@ package robotlegs.bender.util.statemachine.impl {
             }
 
             // can't call twice the same action for state
-            var nextState:State = getStateForAction(event.action);
+            var nextState:IState = getStateForAction(event.action);
             if (_currentState && nextState && _currentState.name == nextState.name) {
                 return;
             }
@@ -110,7 +114,7 @@ package robotlegs.bender.util.statemachine.impl {
          * @param state the state to which to register the above commands
          * @param initial boolean telling if this is the initial state of the system
          */
-        public function registerState(state:State, initial:Boolean = false):void {
+        public function registerState(state:IState, initial:Boolean = false):void {
             if (state == null || _states[state.name] != null) {
                 return;
             }
@@ -128,11 +132,11 @@ package robotlegs.bender.util.statemachine.impl {
          *
          * @param stateName
          */
-        public function getStateByName(stateName:String):State {
+        public function getStateByName(stateName:String):IState {
             return _states[stateName];
         }
 
-        public function getStateForAction(action:String):State {
+        public function getStateForAction(action:String):IState {
             return _currentState ? _states[_currentState.getTarget(action)] : null;
         }
 
@@ -145,7 +149,7 @@ package robotlegs.bender.util.statemachine.impl {
          * @param stateName
          */
         public function removeState(stateName:String):void {
-            var state:State = _states[stateName];
+            var state:IState = _states[stateName];
             if (state == null) {
                 return;
             }
@@ -172,7 +176,7 @@ package robotlegs.bender.util.statemachine.impl {
          * @param nextState the next State to transition to.
          * @param data is the optional Object that was sent in the <code>StateEvent.ACTION</code> event
          */
-        protected function transitionTo(nextState:State, data:Object = null):void {
+        protected function transitionTo(nextState:IState, data:Object = null):void {
             _hasChanged = false;
 
             if (_currentState) {

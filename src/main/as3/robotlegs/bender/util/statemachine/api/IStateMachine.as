@@ -1,30 +1,27 @@
 package robotlegs.bender.util.statemachine.api {
-    import robotlegs.bender.util.statemachine.impl.State;
-
-
     /**
      * @author Benoit vinay - ben@benoitvinay.com
      */
     public interface IStateMachine {
 
-        function get previousState():State
+        function get previousState():IState
 
-        function get currentState():State
+        function get currentState():IState
 
         function get currentStateName():String;
 
-        function get history():Array;
+        function get history():Vector.<String>;
 
 
         function onRegister():void;
 
         function onRemove():void;
 
-        function registerState(state:State, initial:Boolean = false):void;
+        function registerState(state:IState, initial:Boolean = false):void;
 
-        function getStateByName(stateName:String):State;
+        function getStateByName(stateName:String):IState;
 
-        function getStateForAction(action:String):State;
+        function getStateForAction(action:String):IState;
 
         function removeState(stateName:String):void;
 

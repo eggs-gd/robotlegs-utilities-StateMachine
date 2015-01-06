@@ -5,10 +5,12 @@
  Your reuse is governed by the Creative Commons Attribution 3.0 License
  */
 package robotlegs.bender.util.fsmInjector.impl {
-    import robotlegs.bender.util.statemachine.impl.*;
+    import robotlegs.bender.util.statemachine.api.IState;
+    import robotlegs.bender.util.statemachine.api.IStateMachine;
     import flash.events.IEventDispatcher;
 
     import robotlegs.bender.util.fsmInjector.api.IFSMInjector;
+    import robotlegs.bender.util.statemachine.impl.State;
 
 
     public class FSMInjector implements IFSMInjector {
@@ -35,14 +37,14 @@ package robotlegs.bender.util.fsmInjector.impl {
         /**
          * Creates a <code>State</code> instance from its XML definition.
          */
-        private static function stateFromXml(xmlState:XML):State {
+        private static function stateFromXml(xmlState:XML):IState {
             // Create State object
             var name:String = xmlState.@name.toString();
             var exiting:String = xmlState.@exiting.toString();
             var entering:String = xmlState.@entering.toString();
             var changed:String = xmlState.@changed.toString();
 
-            var state:State = new State(name, entering, exiting, changed);
+            var state:IState = new State(name, entering, exiting, changed);
 
             // Create transitions
             var transitions:XMLList = xmlState..transition as XMLList;
@@ -95,7 +97,7 @@ package robotlegs.bender.util.fsmInjector.impl {
         //=====================================================================
         //  public
         //=====================================================================
-        public function inject(stateMachine:StateMachine):void {
+        public function inject(stateMachine:IStateMachine):void {
             // Register all the states with the StateMachine
             for each (var state:State in states) {
                 stateMachine.registerState(state, (state.name == _initialState));
