@@ -5,11 +5,9 @@
  Your reuse is governed by the Creative Commons Attribution 3.0 License
  */
 package robotlegs.bender.util.fsmInjector.impl {
+    import robotlegs.bender.util.fsmInjector.api.IFSMInjector;
     import robotlegs.bender.util.statemachine.api.IState;
     import robotlegs.bender.util.statemachine.api.IStateMachine;
-    import flash.events.IEventDispatcher;
-
-    import robotlegs.bender.util.fsmInjector.api.IFSMInjector;
     import robotlegs.bender.util.statemachine.impl.State;
 
 
@@ -55,22 +53,32 @@ package robotlegs.bender.util.fsmInjector.impl {
             return state;
         }
 
-
         //=====================================================================
         //  parameters
         //=====================================================================
+
+        public function FSMInjector(fsm:XML) {
+            this.fsm = fsm;
+        }
         protected var _initialState:String;
+        protected var _stateList:Array;
 
         protected var _fsm:XML;
+
+        // The List of State objects
+
         public function get fsm():XML { return _fsm; }
+
         public function set fsm(value:XML):void {
             dispose();
             _fsm = value;
             _initialState = XML(_fsm.@initial).toString();
         }
 
-        // The List of State objects
-        protected var _stateList:Array;
+        //=====================================================================
+        //  constructor
+        //=====================================================================
+
         /**
          * Get the state definitions.
          * <P>
@@ -83,20 +91,11 @@ package robotlegs.bender.util.fsmInjector.impl {
             return _stateList;
         }
 
-        [Inject] /** @private */
-        public var eventDispatcher:IEventDispatcher;
-
-        //=====================================================================
-        //  constructor
-        //=====================================================================
-        public function FSMInjector(fsm:XML) {
-            this.fsm = fsm;
-        }
-
 
         //=====================================================================
         //  public
         //=====================================================================
+
         public function inject(stateMachine:IStateMachine):void {
             // Register all the states with the StateMachine
             for each (var state:State in states) {

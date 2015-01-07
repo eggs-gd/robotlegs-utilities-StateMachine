@@ -11,6 +11,64 @@ package robotlegs.bender.util.statemachine.tests.cases {
 
 
     public class StateMachineTests {
+        private static const STARTING:String = "state/starting";
+        private static const START:String = "event/start";
+        private static const START_ENTERING:String = "action/start/entering";
+        private static const STARTED:String = "action/completed/start";
+        private static const START_FAILED:String = "action/start/failed";
+        private static const CONSTRUCTING:String = "state/constructing";
+        private static const CONSTRUCT:String = "event/construct";
+        private static const CONSTRUCT_ENTERING:String = "action/construct/entering";
+        private static const CONSTRUCTED:String = "action/completed/construction";
+        private static const CONSTRUCTION_EXIT:String = "event/construction/exit";
+        private static const CONSTRUCTION_FAILED:String = "action/contruction/failed";
+        private static const NAVIGATING:String = "state/navigating";
+        private static const NAVIGATE:String = "event/navigate";
+
+        ////////
+        // State Machine Constants and Vars
+        ///////
+        private static const FAILING:String = "state/failing";
+        private static const FAIL:String = "event/fail";
+        private static const FSM_ONE_STATE:XML =
+                <fsm initial={STARTING}>
+
+                    <!-- THE INITIAL STATE -->
+                    <state name={STARTING} entering={START_ENTERING}>
+
+                    </state>
+                </fsm>;
+        private static const FSM:XML =
+                <fsm initial={STARTING}>
+
+                    <!-- THE INITIAL STATE -->
+                    <state name={STARTING}>
+
+                        <transition action={STARTED}
+                                target={CONSTRUCTING}/>
+
+                        <transition action={START_FAILED}
+                                target={FAILING}/>
+                    </state>
+
+                    <!-- DOING SOME WORK -->
+                    <state name={CONSTRUCTING} changed={CONSTRUCT} exiting={CONSTRUCTION_EXIT} entering={CONSTRUCT_ENTERING}>
+
+                        <transition action={CONSTRUCTED}
+                                target={NAVIGATING}/>
+
+                        <transition action={CONSTRUCTION_FAILED}
+                                target={FAILING}/>
+
+                    </state>
+
+                    <!-- READY TO ACCEPT BROWSER OR USER NAVIGATION -->
+                    <state name={NAVIGATING} changed={NAVIGATE}/>
+
+                    <!-- REPORT FAILURE FROM ANY STATE -->
+                    <state name={FAILING} changed={FAIL}/>
+
+                </fsm>;
         private var eventDispatcher:IEventDispatcher;
         private var fsmInjector:FSMInjector;
 
@@ -18,7 +76,6 @@ package robotlegs.bender.util.statemachine.tests.cases {
         public function runBeforeEachTest():void {
             eventDispatcher = new EventDispatcher();
             fsmInjector = new FSMInjector(FSM);
-            fsmInjector.eventDispatcher = eventDispatcher;
         }
 
         [After]
@@ -104,71 +161,8 @@ package robotlegs.bender.util.statemachine.tests.cases {
             eventDispatcher.dispatchEvent(new StateEvent(StateEvent.ACTION, STARTED, data));
         }
 
-        private function handleStateChange(event:StateEvent, pass:Object):void {
+        private static function handleStateChange(event:StateEvent):void {
             Assert.assertTrue(event.data.value == "someData");
         }
-
-        ////////
-        // State Machine Constants and Vars
-        ///////
-        private static const STARTING:String = "state/starting";
-        private static const START:String = "event/start";
-        private static const START_ENTERING:String = "action/start/entering";
-        private static const STARTED:String = "action/completed/start";
-        private static const START_FAILED:String = "action/start/failed";
-
-        private static const CONSTRUCTING:String = "state/constructing";
-        private static const CONSTRUCT:String = "event/construct";
-        private static const CONSTRUCT_ENTERING:String = "action/construct/entering";
-        private static const CONSTRUCTED:String = "action/completed/construction";
-        private static const CONSTRUCTION_EXIT:String = "event/construction/exit";
-        private static const CONSTRUCTION_FAILED:String = "action/contruction/failed";
-
-        private static const NAVIGATING:String = "state/navigating";
-        private static const NAVIGATE:String = "event/navigate";
-
-        private static const FAILING:String = "state/failing";
-        private static const FAIL:String = "event/fail";
-
-        private static const FSM_ONE_STATE:XML =
-                <fsm initial={STARTING}>
-
-                    <!-- THE INITIAL STATE -->
-                    <state name={STARTING} entering={START_ENTERING}>
-
-                    </state>
-                </fsm>;
-
-        private static const FSM:XML =
-                <fsm initial={STARTING}>
-
-                    <!-- THE INITIAL STATE -->
-                    <state name={STARTING}>
-
-                        <transition action={STARTED}
-                                target={CONSTRUCTING}/>
-
-                        <transition action={START_FAILED}
-                                target={FAILING}/>
-                    </state>
-
-                    <!-- DOING SOME WORK -->
-                    <state name={CONSTRUCTING} changed={CONSTRUCT} exiting={CONSTRUCTION_EXIT} entering={CONSTRUCT_ENTERING}>
-
-                        <transition action={CONSTRUCTED}
-                                target={NAVIGATING}/>
-
-                        <transition action={CONSTRUCTION_FAILED}
-                                target={FAILING}/>
-
-                    </state>
-
-                    <!-- READY TO ACCEPT BROWSER OR USER NAVIGATION -->
-                    <state name={NAVIGATING} changed={NAVIGATE}/>
-
-                    <!-- REPORT FAILURE FROM ANY STATE -->
-                    <state name={FAILING} changed={FAIL}/>
-
-                </fsm>;
     }
 }
