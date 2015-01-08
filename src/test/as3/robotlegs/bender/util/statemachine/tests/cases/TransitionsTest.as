@@ -7,6 +7,7 @@ package robotlegs.bender.util.statemachine.tests.cases {
     import robotlegs.bender.util.fsmInjector.impl.FSMInjector;
     import robotlegs.bender.util.statemachine.impl.StateEvent;
     import robotlegs.bender.util.statemachine.impl.StateMachine;
+    import robotlegs.bender.util.statemachine.impl.TransitionEvent;
 
 
     public class TransitionsTest {
@@ -21,10 +22,10 @@ package robotlegs.bender.util.statemachine.tests.cases {
 
         private static const FSM:XML = <fsm initial={STATE_INIT}>
                 <state name={STATE_INIT}>
-                        <transition action={ACTION_READY} target={STATE_READY} completed={EVENT_TRANSITION_COMPLETE}/>
+                        <transition action={ACTION_READY} target={STATE_READY} complete={EVENT_TRANSITION_COMPLETE}/>
                 </state>
 
-                <state name={STATE_READY} changed={STATE_READY_CHANGED}/>
+                <state name={STATE_READY} complete={STATE_READY_CHANGED}/>
         </fsm>;
 
         private var eventDispatcher:IEventDispatcher;
@@ -55,6 +56,17 @@ package robotlegs.bender.util.statemachine.tests.cases {
             fsmInjector.inject(stateMachine);
             eventDispatcher.dispatchEvent(new StateEvent(StateEvent.ACTION, ACTION_READY));
             Assert.assertEquals(STATE_INIT, stateMachine.currentState.name);
+        }
+
+        [Test]
+        public function completeNextState():void {
+            var stateMachine:StateMachine = new StateMachine(eventDispatcher);
+            fsmInjector.inject(stateMachine);
+            eventDispatcher.dispatchEvent(new StateEvent(StateEvent.ACTION, ACTION_READY));
+            Assert.assertEquals(STATE_INIT, stateMachine.currentState.name);
+
+            eventDispatcher.dispatchEvent(new TransitionEvent(TransitionEvent.COMPLETE, EVENT_TRANSITION_COMPLETE));
+            Assert.assertEquals(STATE_READY, stateMachine.currentState.name);
         }
     }
 }

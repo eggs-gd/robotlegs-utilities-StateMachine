@@ -23,8 +23,8 @@ package robotlegs.bender.util.statemachine.impl {
         private var _exiting:String;
         public function get exiting():String { return _exiting; }
 
-        private var _changed:String;
-        public function get changed():String { return _changed; }
+        private var _complete:String;
+        public function get complete():String { return _complete; }
 
         /** @inheritDoc */
         protected var _transitions:Vector.<ITransition>;
@@ -38,13 +38,13 @@ package robotlegs.bender.util.statemachine.impl {
          * @param name the id of the state
          * @param entering an optional event name to be sent when entering this state
          * @param exiting an optional event name to be sent when exiting this state
-         * @param changed an optional event name to be sent when fully transitioned to this state
+         * @param complete an optional event name to be sent when fully transitioned to this state
          */
-        public function State(name:String, entering:String = null, exiting:String = null, changed:String = null) {
+        public function State(name:String, entering:String = null, exiting:String = null, complete:String = null) {
             _name = name;
             _entering = entering;
             _exiting = exiting;
-            _changed = changed;
+            _complete = complete;
 
             _transitions = new <ITransition>[];
         }
@@ -65,13 +65,13 @@ package robotlegs.bender.util.statemachine.impl {
                 return false;
             }
 
-            _transitions.splice(_transitions.indexOf(transition), 1);
+            _transitions.splice(transitions.indexOf(transition), 1);
             return true;
         }
 
         /** @inheritDoc */
         public function getTransition(action:String):ITransition {
-            for each (var transition:ITransition in _transitions) {
+            for each (var transition:ITransition in transitions) {
                 if (transition.action == action) {
                     return transition;
                 }
@@ -79,9 +79,8 @@ package robotlegs.bender.util.statemachine.impl {
             return null;
         }
 
-        /** @inheritDoc */
-        public function toString():String {
-            return "State (name: " + _name + ")";
+        public function hasTransition(action:String):Boolean {
+            return Boolean(getTransition(action));
         }
     }
 }

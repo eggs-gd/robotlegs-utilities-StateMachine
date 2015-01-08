@@ -42,15 +42,19 @@ package robotlegs.bender.util.fsmInjector.impl {
             var name:String = xmlState.@name.toString();
             var exiting:String = xmlState.@exiting.toString();
             var entering:String = xmlState.@entering.toString();
-            var changed:String = xmlState.@changed.toString();
+            var complete:String = xmlState.@complete.toString();
 
-            var state:IState = new State(name, entering, exiting, changed);
+            var state:IState = new State(name, entering, exiting, complete);
 
             // Create transitions
             var transitions:XMLList = xmlState..transition as XMLList;
             for (var i:int = 0; i < transitions.length(); i++) {
                 var xmlTransition:XML = transitions[i];
-                var transition:ITransition = new Transition(String(xmlTransition.@action), String(xmlTransition.@target));
+                var transition:ITransition = new Transition(
+                        String(xmlTransition.@action),
+                        String(xmlTransition.@target),
+                        String(xmlTransition.@complete)
+                );
                 state.addTransition(transition);
             }
             return state;

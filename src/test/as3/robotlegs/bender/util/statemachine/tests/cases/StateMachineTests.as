@@ -43,32 +43,28 @@ package robotlegs.bender.util.statemachine.tests.cases {
 
                     <!-- THE INITIAL STATE -->
                     <state name={STARTING}>
-
-                        <transition action={STARTED}
-                                target={CONSTRUCTING}/>
-
-                        <transition action={START_FAILED}
-                                target={FAILING}/>
+                        <transition action={STARTED} target={CONSTRUCTING}/>
+                        <transition action={START_FAILED} target={FAILING}/>
                     </state>
 
                     <!-- DOING SOME WORK -->
-                    <state name={CONSTRUCTING} changed={CONSTRUCT} exiting={CONSTRUCTION_EXIT} entering={CONSTRUCT_ENTERING}>
+                    <state  name={CONSTRUCTING}
+                            complete={CONSTRUCT}
+                            entering={CONSTRUCT_ENTERING}
+                            exiting={CONSTRUCTION_EXIT} >
 
-                        <transition action={CONSTRUCTED}
-                                target={NAVIGATING}/>
-
-                        <transition action={CONSTRUCTION_FAILED}
-                                target={FAILING}/>
-
+                        <transition action={CONSTRUCTED} target={NAVIGATING}/>
+                        <transition action={CONSTRUCTION_FAILED} target={FAILING}/>
                     </state>
 
                     <!-- READY TO ACCEPT BROWSER OR USER NAVIGATION -->
-                    <state name={NAVIGATING} changed={NAVIGATE}/>
+                    <state name={NAVIGATING} complete={NAVIGATE}/>
 
                     <!-- REPORT FAILURE FROM ANY STATE -->
-                    <state name={FAILING} changed={FAIL}/>
+                    <state name={FAILING} complete={FAIL}/>
 
                 </fsm>;
+
         private var eventDispatcher:IEventDispatcher;
         private var fsmInjector:FSMInjector;
 
@@ -103,8 +99,10 @@ package robotlegs.bender.util.statemachine.tests.cases {
         public function constructionStateFailure():void {
             var stateMachine:StateMachine = new StateMachine(eventDispatcher);
             fsmInjector.inject(stateMachine);
+
             eventDispatcher.dispatchEvent(new StateEvent(StateEvent.ACTION, STARTED));
             Assert.assertEquals(CONSTRUCTING, stateMachine.currentState.name);
+
             eventDispatcher.dispatchEvent(new StateEvent(StateEvent.ACTION, CONSTRUCTION_FAILED));
             Assert.assertEquals(FAILING, stateMachine.currentState.name);
         }
@@ -129,7 +127,7 @@ package robotlegs.bender.util.statemachine.tests.cases {
             //listen for CONSTRUCTION_EXIT and block transition to next state
             eventDispatcher.addEventListener(CONSTRUCTION_EXIT,
                     function (event:StateEvent):void {
-                        eventDispatcher.dispatchEvent(new StateEvent(StateEvent.CANCEL, stateMachine.currentState.name));
+                        eventDispatcher.dispatchEvent(new StateEvent(StateEvent.CLOSE, stateMachine.currentState.name));
                     }
             );
 

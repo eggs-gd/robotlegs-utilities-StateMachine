@@ -9,9 +9,11 @@ package robotlegs.bender.util.statemachine.impl {
 
 
     public class StateEvent extends Event {
-        public static const CHANGED:String = "changed";
-        public static const ACTION:String = "action";
-        public static const CANCEL:String = "cancel";
+        public static const COMPLETE:String = "robotlegs.bender.util.statemachine.impl.StateEvent.COMPLETE";
+        public static const CLOSE:String = "robotlegs.bender.util.statemachine.impl.StateEvent.CLOSE";
+
+        public static const ACTION:String = "robotlegs.bender.util.statemachine.impl.StateEvent.ACTION";
+
 
         private var _action:String;
         public function get action():String { return _action; }

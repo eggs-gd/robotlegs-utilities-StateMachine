@@ -15,6 +15,29 @@
         <flash.version>10.1</flash.version>
     </properties>
 
+    <profiles>
+        <profile>
+            <id>release</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <compile.debug>false</compile.debug>
+            </properties>
+        </profile>
+        <profile>
+            <id>debug</id>
+            <activation>
+                <property>
+                    <name>debug</name>
+                </property>
+            </activation>
+            <properties>
+                <compile.debug>true</compile.debug>
+            </properties>
+        </profile>
+    </profiles>
+
     <dependencies>
         <!-- Specify player version -->
         <dependency>
@@ -93,6 +116,7 @@
                     <as3>true</as3>
                     <storepass/>
                     <targetPlayer>${flash.version}</targetPlayer>
+                    <debug>${compile.debug}</debug>
                     <compilerWarnings>
                         <warn-no-constructor>false</warn-no-constructor>
                     </compilerWarnings>

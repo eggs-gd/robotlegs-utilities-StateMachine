@@ -13,13 +13,13 @@ package robotlegs.bender.util.statemachine.impl {
         private var _target:String;
 
         /** @inheritDoc */
-        public function get complete():String { return _completed; }
-        private var _completed:String;
+        public function get complete():String { return _complete; }
+        private var _complete:String;
 
-        public function Transition(action:String, target:String, completed:String = "") {
+        public function Transition(action:String, target:String, complete:String = "") {
             _action = action;
             _target = target;
-            _completed = completed;
+            _complete = complete;
         }
     }
 }

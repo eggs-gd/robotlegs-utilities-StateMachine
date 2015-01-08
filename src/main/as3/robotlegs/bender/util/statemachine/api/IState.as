@@ -19,13 +19,20 @@ package robotlegs.bender.util.statemachine.api {
         /**
          * The notification to dispatch when the state has actually changed
          */
-        function get changed():String;
+        function get complete():String;
 
         /**
          * Available transitions of this state.
          * returns clone of transitions list
          */
         function get transitions():Vector.<ITransition>;
+
+        /**
+         * checks if state can start transition
+         * @param action
+         * @return
+         */
+        function hasTransition(action:String):Boolean;
 
         /**
          * Add a transition.
