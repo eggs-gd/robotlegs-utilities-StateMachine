@@ -47,9 +47,16 @@ package robotlegs.bender.util.statemachine.api {
         function removeTransition(actionName:String):Boolean;
 
         /**
-         * Get the target state name for a given action.
+         * Get the transition for a given action.
          * @param actionName
          */
         function getTransition(actionName:String):ITransition;
+
+        /**
+         * Get the target state name for a given action.
+         * @param actionName
+         * @return stateName
+         */
+        function getNextState(actionName:String):String;
     }
 }

@@ -5,11 +5,13 @@
  Your reuse is governed by the Creative Commons Attribution 3.0 License
  */
 package robotlegs.bender.util.statemachine.impl {
+    import flash.errors.IllegalOperationError;
     import flash.events.IEventDispatcher;
 
     import robotlegs.bender.util.statemachine.api.IState;
     import robotlegs.bender.util.statemachine.api.IStateMachine;
     import robotlegs.bender.util.statemachine.api.ITransition;
+    import robotlegs.bender.util.statemachine.impl.TransitionEvent;
 
 
     public class StateMachine implements IStateMachine {
@@ -20,7 +22,7 @@ package robotlegs.bender.util.statemachine.impl {
         //  History
         //=====================================================================
         /** @inheritDoc */
-        public function get history():Vector.<String> { return _history; }
+        public function get history():Vector.<String> { return _history.concat(); }
         private var _history:Vector.<String>;
 
         /** @inheritDoc */
@@ -32,7 +34,8 @@ package robotlegs.bender.util.statemachine.impl {
         private var _pendingState:IState;
 
         /** @inheritDoc */
-        public function get isInTransition():Boolean { return Boolean(pendingState); }
+        public function get currentTransition():ITransition { return _currentTransition; }
+        private var _currentTransition:ITransition;
 
         //=====================================================================
         //  Private
@@ -41,11 +44,10 @@ package robotlegs.bender.util.statemachine.impl {
 
         /** Map of States objects by name. */
         private var _states:Vector.<IState>;
+        private var _statesMap:Object; // {stateName:state}
 
         /** The initial state of the FSM. */
-        private var _initialTransition:ITransition;
-
-        private var _actionQueue:Vector.<StateEvent>;
+        private var _initialState:IState;
 
         /**
          *  robotlegs.bender.util.statemachine.impl.StateMachine Constructor
@@ -56,7 +58,7 @@ package robotlegs.bender.util.statemachine.impl {
             _eventDispatcher = eventDispatcher;
             _history = new <String>[];
             _states = new <IState>[];
-            _actionQueue = new <StateEvent>[];
+            _statesMap = {};
         }
 
         public function toString():String {
@@ -66,17 +68,28 @@ package robotlegs.bender.util.statemachine.impl {
         /** @inheritDoc */
         public function onRegister():void {
             _eventDispatcher.addEventListener(StateEvent.ACTION, handleStateAction);
-            _eventDispatcher.addEventListener(StateEvent.CLOSE, handleStateCancel);
-            if (_initialTransition) {
-                _pendingState = getStateByName(_initialTransition.target);
+            _eventDispatcher.addEventListener(StateEvent.BACK, handleStateBack);
+            _eventDispatcher.addEventListener(StateEvent.COMPLETE, handleStateComplete);
+
+            _eventDispatcher.addEventListener(TransitionEvent.COMPLETE, onTransitionComplete);
+            _eventDispatcher.addEventListener(TransitionEvent.CANCEL, onTransitionCancel);
+
+            if (_initialState) {
+                _pendingState = _initialState;
                 completeState();
+            } else {
+                throw new DefinitionError("Not registered initial state");
             }
         }
 
         /** @inheritDoc */
         public function onRemove():void {
             _eventDispatcher.removeEventListener(StateEvent.ACTION, handleStateAction);
-            _eventDispatcher.removeEventListener(StateEvent.CLOSE, handleStateCancel);
+            _eventDispatcher.removeEventListener(StateEvent.BACK, handleStateBack);
+            _eventDispatcher.removeEventListener(StateEvent.COMPLETE, handleStateComplete);
+
+            _eventDispatcher.removeEventListener(TransitionEvent.COMPLETE, onTransitionComplete);
+            _eventDispatcher.removeEventListener(TransitionEvent.CANCEL, onTransitionCancel);
         }
 
         /** @inheritDoc */
@@ -84,85 +97,58 @@ package robotlegs.bender.util.statemachine.impl {
             onRemove();
 
             _eventDispatcher = null;
-            _initialTransition = null;
+            _initialState = null;
 
             _states = null;
-            _actionQueue = null;
+            _statesMap = null;
             _history = null;
         }
 
         /** @inheritDoc */
         public function registerState(state:IState, initial:Boolean = false):Boolean {
-            if (!state || hasRegistered(state.name)) {
+            if (!state) {
+                throw new ArgumentError("state should be not null");
+            }
+
+            if (hasState(state.name)) {
                 return false;
             }
 
-            _states.push(state);
+            addState(state);
+
             if (initial) {
-                _initialTransition = new Transition(INITIAL_TRANSITION_NAME, state.name);
+                if (_initialState) {
+                    throw new ArgumentError("Cant be more than one initial states");
+                } else{
+                    _initialState = state;
+                }
             }
 
             return true;
-        }
-
-        /** @inheritDoc */
-        public function getStateByName(stateName:String):IState {
-            for each(var state:IState in _states) {
-                if (state.name == stateName) {
-                    return state;
-                }
-            }
-            return null;
-        }
-
-        /** @inheritDoc */
-        public function hasRegistered(stateName:String):Boolean {
-            return Boolean(getStateByName(stateName));
-        }
-
-        /** @inheritDoc */
-        public function getStateByAction(action:String):IState {
-            if (currentState) {
-                var transition:ITransition = currentState.getTransition(action);
-                if (transition) {
-                    return getStateByName(transition.target);
-                }
-            }
-
-            return null;
         }
 
         /** @inheritDoc */
         public function removeState(stateName:String):Boolean {
-            var state:IState = getStateByName(stateName);
+            var state:IState = _statesMap[stateName];
             if (state == null) {
                 return false;
             }
 
-            _states.splice(_states.indexOf(state), 1);
+            delState(state);
             return true;
         }
 
-        /**
-         * Transitions queue.
-         * <P>
-         * Used to be sure to transition to next state after all observers have been notified of the previous state.</P>
-         * <P>
-         * To be sure the app has completely transition to a State.</P>
-         */
-        private function transitionToQueueState():void {
-            // if queue
-            if (_actionQueue && _actionQueue.length > 0) {
-                var stateEvent:StateEvent = _actionQueue.shift();
 
-                // if currentState has no state for that action
-                // we go to the next one
-                if (!_currentState.getTransition(stateEvent.action)) {
-                    transitionToQueueState();
-                } else {
-                    handleStateAction(stateEvent);
+
+        private function getStateByAction(action:String):IState {
+            if (currentState) {
+                var transition:ITransition = currentState.getTransition(action);
+                if (transition) {
+                    return _statesMap[transition.target];
                 }
             }
+
+            return null;
         }
 
         /**
@@ -171,107 +157,117 @@ package robotlegs.bender.util.statemachine.impl {
          * @param data
          * @return true if started
          */
-        private function startState(action:String, data:Object = null):Boolean {
-            // can't call twice the same action for state
+        private function next(action:String, data:Object = null):Boolean {
             if (!canDoTransition(action)) {
                 return false;
             }
 
             _pendingState = getStateByAction(action);
-            _history.push(currentState.name);
 
             if (currentState.exiting) {
                 _eventDispatcher.dispatchEvent(new StateEvent(currentState.exiting, currentState.name, data));
             }
 
-            if (pendingState.entering) {
-                _eventDispatcher.dispatchEvent(new StateEvent(pendingState.entering, currentState.name, data));
+            if (!pendingState) { // rejected by guard
+                return false;
             }
 
-            var transition:ITransition = currentState.getTransition(action);
+            if (pendingState.entering) {
+                _eventDispatcher.dispatchEvent(new StateEvent(pendingState.entering, pendingState.name, data));
+            }
+
+            if (!pendingState) { // rejected by guard
+                return false;
+            }
+
+            _currentTransition = currentState.getTransition(action);
+            _history.push(currentState.name);
             _currentState = null;
 
-            if (transition.complete != "") { // if transition is instant
-                _eventDispatcher.addEventListener(TransitionEvent.COMPLETE, onTransitionComplete);
-                _eventDispatcher.addEventListener(TransitionEvent.CANCEL, onTransitionCancel);
+            if (currentTransition.complete == "") {
+                dispatchTransitionComplete(new TransitionEvent(TransitionEvent.COMPLETE, currentTransition.target, data));
             } else {
-                completeState(data);
+                _eventDispatcher.addEventListener(currentTransition.complete, dispatchTransitionComplete);
             }
             return true;
         }
 
         private function completeState(data:Object = null):void {
             _currentState = pendingState;
+            _pendingState = null;
+            _currentTransition = null;
 
-            if (pendingState.complete) {
+            if (currentState.complete) {
                 _eventDispatcher.dispatchEvent(new StateEvent(currentState.complete, currentState.name, data));
             }
 
             // Notify the app generally that the state changed and what the new state is
             _eventDispatcher.dispatchEvent(new StateEvent(StateEvent.COMPLETE, currentState.name, data));
-            _pendingState = null;
-
-            // queue
-            transitionToQueueState();
         }
 
-        private function closeState():void {
-            //cancel previous
-            if (pendingState && pendingState.exiting) {
-                _eventDispatcher.dispatchEvent(new StateEvent(pendingState.exiting, pendingState.name));
-            }
-            _pendingState = getStateByName(history.pop());
-
-            completeState();
+        private function addState(state:IState):void {
+            _states.push(state);
+            _statesMap[state.name] = state;
         }
 
-        private function addToQueue(event:StateEvent):void {
-            _actionQueue.push(event);
+        private function delState(state:IState):void {
+            _states.splice(_states.indexOf(state), 1);
+            delete _statesMap[state.name];
+        }
+
+        //=====================================================================
+        //  Checkers
+        //=====================================================================
+        private function hasState(stateName:String):Boolean {
+            return Boolean(_statesMap[stateName]);
         }
 
         private function canDoTransition(action:String):Boolean {
-            if (!currentState && action == INITIAL_TRANSITION_NAME) {
-                return true;
-            }
-
-            if (isInTransition) {
+            if (!currentState.hasTransition(action)) {
                 return false;
             }
 
-            var nextState:IState = getStateByAction(action);
-
-            if (!nextState || !currentState) {
-                return false;
-            }
-            if (currentState.name == nextState.name) {
+            if (!currentState) {
                 return false;
             }
 
-            return currentState.hasTransition(action);
+            return (currentState.name != currentState.getNextState(action));
+        }
+
+        private function get isInTransition():Boolean {
+            return Boolean(currentTransition);
         }
 
         //=====================================================================
         //  Handlers
         //=====================================================================
         private function handleStateAction(event:StateEvent):void {
-            if (isInTransition) {
-                addToQueue(event);
-                return;
+            if (!isInTransition) {
+                next(event.action, event.data);
+            } else {
+                throw new Error("ups");
             }
-
-            startState(event.action, event.data);
         }
 
-        private function handleStateCancel(event:StateEvent):void {
-            closeState()
+        private function handleStateBack(event:StateEvent):void {
+        }
+
+        private function handleStateComplete(event:StateEvent):void {
+        }
+
+        private function dispatchTransitionComplete(event:TransitionEvent):void {
+            _eventDispatcher.dispatchEvent(new TransitionEvent(TransitionEvent.COMPLETE, _currentTransition.target, event.data));
         }
 
         private function onTransitionComplete(event:TransitionEvent):void {
-            completeState(event.data);
+            if (pendingState && pendingState.name == event.targetState) {
+                completeState(event.data);
+            }
         }
 
         private function onTransitionCancel(event:TransitionEvent):void {
-            closeState();
+            _pendingState = null;
+            _currentTransition = null;
         }
     }
 }

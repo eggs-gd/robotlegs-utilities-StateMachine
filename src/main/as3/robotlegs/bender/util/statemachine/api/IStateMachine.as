@@ -6,10 +6,12 @@ package robotlegs.bender.util.statemachine.api {
 
         function get currentState():IState
         function get pendingState():IState
+        function get currentTransition():ITransition;
 
+        /**
+         * Returns clone of history list
+         */
         function get history():Vector.<String>;
-
-        function get isInTransition():Boolean;
 
         function onRegister():void;
         function onRemove():void;
@@ -29,30 +31,6 @@ package robotlegs.bender.util.statemachine.api {
          * @param stateName
          */
         function removeState(stateName:String):Boolean;
-
-        /**
-         * Retrieve a state.
-         * <P>Utility method for retrieving a State.</P>
-         *
-         * @param stateName
-         */
-        function getStateByName(stateName:String):IState;
-
-        /**
-         * SM has registered state with given name
-         * @param stateName
-         * @return
-         */
-        function hasRegistered(stateName:String):Boolean
-
-
-        /**
-         * Retrieve a state.
-         * <P>Utility method for retrieving a State.</P>
-         *
-         * @param action
-         */
-        function getStateByAction(action:String):IState;
 
         function dispose():void;
     }

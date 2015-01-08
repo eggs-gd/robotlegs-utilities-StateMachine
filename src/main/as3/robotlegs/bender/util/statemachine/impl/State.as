@@ -14,23 +14,22 @@ package robotlegs.bender.util.statemachine.impl {
      */
     public class State implements IState {
 
-        private var _name:String;
         public function get name():String { return _name; }
+        private var _name:String;
 
-        private var _entering:String;
         public function get entering():String { return _entering; }
+        private var _entering:String;
 
-        private var _exiting:String;
         public function get exiting():String { return _exiting; }
+        private var _exiting:String;
 
-        private var _complete:String;
         public function get complete():String { return _complete; }
+        private var _complete:String;
 
         /** @inheritDoc */
-        protected var _transitions:Vector.<ITransition>;
-        public function get transitions():Vector.<ITransition> {
-            return _transitions.concat();
-        }
+        public function get transitions():Vector.<ITransition> { return _transitions.concat(); }
+        private var _transitions:Vector.<ITransition>;
+        private var _transitionsMap:Object; // {action:transition}
 
         /**
          * Constructor.
@@ -47,12 +46,13 @@ package robotlegs.bender.util.statemachine.impl {
             _complete = complete;
 
             _transitions = new <ITransition>[];
+            _transitionsMap = {};
         }
 
         /** @inheritDoc */
         public function addTransition(transition:ITransition):Boolean {
             if (getTransition(transition.action) == null) {
-                _transitions.push(transition);
+                addTrans(transition);
                 return true;
             }
             return false;
@@ -65,7 +65,7 @@ package robotlegs.bender.util.statemachine.impl {
                 return false;
             }
 
-            _transitions.splice(transitions.indexOf(transition), 1);
+            delTrans(transition);
             return true;
         }
 
@@ -79,8 +79,25 @@ package robotlegs.bender.util.statemachine.impl {
             return null;
         }
 
+        public function getNextState(actionName:String):String {
+            if (hasTransition(actionName)) {
+                return getTransition(actionName).target
+            }
+            return null;
+        }
+
         public function hasTransition(action:String):Boolean {
             return Boolean(getTransition(action));
+        }
+
+        private function addTrans(transition:ITransition):void {
+            _transitions.push(transition);
+            _transitionsMap[transition.action] = transition;
+        }
+
+        private function delTrans(transition:ITransition):void {
+            _transitions.splice(transitions.indexOf(transition), 1);
+            delete _transitionsMap[transition.action];
         }
     }
 }

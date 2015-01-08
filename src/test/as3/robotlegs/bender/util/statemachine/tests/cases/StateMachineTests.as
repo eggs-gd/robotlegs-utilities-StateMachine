@@ -8,6 +8,7 @@ package robotlegs.bender.util.statemachine.tests.cases {
     import robotlegs.bender.util.fsmInjector.impl.FSMInjector;
     import robotlegs.bender.util.statemachine.impl.StateEvent;
     import robotlegs.bender.util.statemachine.impl.StateMachine;
+    import robotlegs.bender.util.statemachine.impl.TransitionEvent;
 
 
     public class StateMachineTests {
@@ -91,6 +92,7 @@ package robotlegs.bender.util.statemachine.tests.cases {
         public function advanceToNextState():void {
             var stateMachine:StateMachine = new StateMachine(eventDispatcher);
             fsmInjector.inject(stateMachine);
+
             eventDispatcher.dispatchEvent(new StateEvent(StateEvent.ACTION, STARTED));
             Assert.assertEquals(CONSTRUCTING, stateMachine.currentState.name);
         }
@@ -111,8 +113,10 @@ package robotlegs.bender.util.statemachine.tests.cases {
         public function stateMachineComplete():void {
             var stateMachine:StateMachine = new StateMachine(eventDispatcher);
             fsmInjector.inject(stateMachine);
+
             eventDispatcher.dispatchEvent(new StateEvent(StateEvent.ACTION, STARTED));
             Assert.assertEquals(CONSTRUCTING, stateMachine.currentState.name);
+
             eventDispatcher.dispatchEvent(new StateEvent(StateEvent.ACTION, CONSTRUCTED));
             Assert.assertEquals(NAVIGATING, stateMachine.currentState.name);
         }
@@ -121,13 +125,14 @@ package robotlegs.bender.util.statemachine.tests.cases {
         public function cancelStateChange():void {
             var stateMachine:StateMachine = new StateMachine(eventDispatcher);
             fsmInjector.inject(stateMachine);
+
             eventDispatcher.dispatchEvent(new StateEvent(StateEvent.ACTION, STARTED));
             Assert.assertEquals(CONSTRUCTING, stateMachine.currentState.name);
 
             //listen for CONSTRUCTION_EXIT and block transition to next state
             eventDispatcher.addEventListener(CONSTRUCTION_EXIT,
                     function (event:StateEvent):void {
-                        eventDispatcher.dispatchEvent(new StateEvent(StateEvent.CLOSE, stateMachine.currentState.name));
+                        eventDispatcher.dispatchEvent(new TransitionEvent(TransitionEvent.CANCEL, stateMachine.currentState.name));
                     }
             );
 

@@ -9,8 +9,10 @@ package robotlegs.bender.util.statemachine.impl {
 
 
     public class TransitionEvent extends Event {
-        public static const COMPLETE:String = "robotlegs.bender.util.statemachine.impl.TransitionEvent.COMPLETE";
+        public static const START:String = "robotlegs.bender.util.statemachine.impl.TransitionEvent.START";
         public static const CANCEL:String = "robotlegs.bender.util.statemachine.impl.TransitionEvent.CANCEL";
+        public static const COMPLETE:String = "robotlegs.bender.util.statemachine.impl.TransitionEvent.COMPLETE";
+
 
         /** target state name */
         public function get targetState():String { return _targetState; }
