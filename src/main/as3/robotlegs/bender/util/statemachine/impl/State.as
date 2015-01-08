@@ -6,6 +6,7 @@
  */
 package robotlegs.bender.util.statemachine.impl {
     import robotlegs.bender.util.statemachine.api.IState;
+    import robotlegs.bender.util.statemachine.api.ITransition;
 
 
     /**
@@ -25,11 +26,11 @@ package robotlegs.bender.util.statemachine.impl {
         private var _changed:String;
         public function get changed():String { return _changed; }
 
-        /**
-         *  Transition map of actions to target states
-         */
-        protected var _transitions:Object;
-
+        /** @inheritDoc */
+        protected var _transitions:Vector.<ITransition>;
+        public function get transitions():Vector.<ITransition> {
+            return _transitions.concat();
+        }
 
         /**
          * Constructor.
@@ -40,44 +41,45 @@ package robotlegs.bender.util.statemachine.impl {
          * @param changed an optional event name to be sent when fully transitioned to this state
          */
         public function State(name:String, entering:String = null, exiting:String = null, changed:String = null) {
-
-            _transitions = {};
-
             _name = name;
             _entering = entering;
             _exiting = exiting;
             _changed = changed;
+
+            _transitions = new <ITransition>[];
         }
 
-        /**
-         * Define a transition.
-         *
-         * @param action the name of the StateMachine.ACTION event type.
-         * @param target the name of the target state to transition to.
-         */
-        public function defineTransition(action:String, target:String):void {
-            if (getTarget(action) == null) {
-                _transitions[action] = target;
+        /** @inheritDoc */
+        public function addTransition(transition:ITransition):Boolean {
+            if (getTransition(transition.action) == null) {
+                _transitions.push(transition);
+                return true;
             }
+            return false;
         }
 
-        /**
-         * Remove a previously defined transition.
-         */
-        public function removeTransition(action:String):void {
-            delete _transitions[action];
+        /** @inheritDoc */
+        public function removeTransition(action:String):Boolean {
+            var transition:ITransition = getTransition(action);
+            if(transition == null) {
+                return false;
+            }
+
+            _transitions.splice(_transitions.indexOf(transition), 1);
+            return true;
         }
 
-        /**
-         * Get the target state name for a given action.
-         */
-        public function getTarget(action:String):String {
-            return _transitions[action];
+        /** @inheritDoc */
+        public function getTransition(action:String):ITransition {
+            for each (var transition:ITransition in _transitions) {
+                if (transition.action == action) {
+                    return transition;
+                }
+            }
+            return null;
         }
 
-        /**
-         * Utils
-         */
+        /** @inheritDoc */
         public function toString():String {
             return "State (name: " + _name + ")";
         }

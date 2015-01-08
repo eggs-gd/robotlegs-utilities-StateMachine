@@ -8,7 +8,9 @@ package robotlegs.bender.util.fsmInjector.impl {
     import robotlegs.bender.util.fsmInjector.api.IFSMInjector;
     import robotlegs.bender.util.statemachine.api.IState;
     import robotlegs.bender.util.statemachine.api.IStateMachine;
+    import robotlegs.bender.util.statemachine.api.ITransition;
     import robotlegs.bender.util.statemachine.impl.State;
+    import robotlegs.bender.util.statemachine.impl.Transition;
 
 
     public class FSMInjector implements IFSMInjector {
@@ -48,7 +50,8 @@ package robotlegs.bender.util.fsmInjector.impl {
             var transitions:XMLList = xmlState..transition as XMLList;
             for (var i:int = 0; i < transitions.length(); i++) {
                 var xmlTransition:XML = transitions[i];
-                state.defineTransition(String(xmlTransition.@action), String(xmlTransition.@target));
+                var transition:ITransition = new Transition(String(xmlTransition.@action), String(xmlTransition.@target));
+                state.addTransition(transition);
             }
             return state;
         }

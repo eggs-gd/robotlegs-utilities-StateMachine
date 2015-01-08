@@ -22,21 +22,27 @@ package robotlegs.bender.util.statemachine.api {
         function get changed():String;
 
         /**
-         * Define a transition.
-         *
-         * @param action the name of the StateMachine.ACTION event type.
-         * @param target the name of the target state to transition to.
+         * Available transitions of this state.
+         * returns clone of transitions list
          */
-        function defineTransition(action:String, target:String):void ;
+        function get transitions():Vector.<ITransition>;
+
+        /**
+         * Add a transition.
+         * @param transition
+         */
+        function addTransition(transition:ITransition):Boolean;
 
         /**
          * Remove a previously defined transition.
+         * @param actionName
          */
-        function removeTransition(action:String):void;
+        function removeTransition(actionName:String):Boolean;
 
         /**
          * Get the target state name for a given action.
+         * @param actionName
          */
-        function getTarget(action:String):String;
+        function getTransition(actionName:String):ITransition;
     }
 }

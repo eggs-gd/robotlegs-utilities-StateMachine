@@ -88,7 +88,7 @@ package robotlegs.bender.util.statemachine.tests.cases {
             var stateMachine:StateMachine = new StateMachine(eventDispatcher);
             fsmInjector.inject(stateMachine);
             Assert.assertEquals(true, stateMachine is StateMachine);
-            Assert.assertEquals(STARTING, stateMachine.currentStateName);
+            Assert.assertEquals(STARTING, stateMachine.currentState.name);
         }
 
         [Test]
@@ -96,7 +96,7 @@ package robotlegs.bender.util.statemachine.tests.cases {
             var stateMachine:StateMachine = new StateMachine(eventDispatcher);
             fsmInjector.inject(stateMachine);
             eventDispatcher.dispatchEvent(new StateEvent(StateEvent.ACTION, STARTED));
-            Assert.assertEquals(CONSTRUCTING, stateMachine.currentStateName);
+            Assert.assertEquals(CONSTRUCTING, stateMachine.currentState.name);
         }
 
         [Test]
@@ -104,9 +104,9 @@ package robotlegs.bender.util.statemachine.tests.cases {
             var stateMachine:StateMachine = new StateMachine(eventDispatcher);
             fsmInjector.inject(stateMachine);
             eventDispatcher.dispatchEvent(new StateEvent(StateEvent.ACTION, STARTED));
-            Assert.assertEquals(CONSTRUCTING, stateMachine.currentStateName);
+            Assert.assertEquals(CONSTRUCTING, stateMachine.currentState.name);
             eventDispatcher.dispatchEvent(new StateEvent(StateEvent.ACTION, CONSTRUCTION_FAILED));
-            Assert.assertEquals(FAILING, stateMachine.currentStateName);
+            Assert.assertEquals(FAILING, stateMachine.currentState.name);
         }
 
         [Test]
@@ -114,9 +114,9 @@ package robotlegs.bender.util.statemachine.tests.cases {
             var stateMachine:StateMachine = new StateMachine(eventDispatcher);
             fsmInjector.inject(stateMachine);
             eventDispatcher.dispatchEvent(new StateEvent(StateEvent.ACTION, STARTED));
-            Assert.assertEquals(CONSTRUCTING, stateMachine.currentStateName);
+            Assert.assertEquals(CONSTRUCTING, stateMachine.currentState.name);
             eventDispatcher.dispatchEvent(new StateEvent(StateEvent.ACTION, CONSTRUCTED));
-            Assert.assertEquals(NAVIGATING, stateMachine.currentStateName);
+            Assert.assertEquals(NAVIGATING, stateMachine.currentState.name);
         }
 
         [Test]
@@ -124,14 +124,18 @@ package robotlegs.bender.util.statemachine.tests.cases {
             var stateMachine:StateMachine = new StateMachine(eventDispatcher);
             fsmInjector.inject(stateMachine);
             eventDispatcher.dispatchEvent(new StateEvent(StateEvent.ACTION, STARTED));
-            Assert.assertEquals(CONSTRUCTING, stateMachine.currentStateName);
+            Assert.assertEquals(CONSTRUCTING, stateMachine.currentState.name);
 
             //listen for CONSTRUCTION_EXIT and block transition to next state
-            eventDispatcher.addEventListener(CONSTRUCTION_EXIT, function (event:StateEvent):void { eventDispatcher.dispatchEvent(new StateEvent(StateEvent.CANCEL)); });
+            eventDispatcher.addEventListener(CONSTRUCTION_EXIT,
+                    function (event:StateEvent):void {
+                        eventDispatcher.dispatchEvent(new StateEvent(StateEvent.CANCEL, stateMachine.currentState.name));
+                    }
+            );
 
             //attempt to complete construction
             eventDispatcher.dispatchEvent(new StateEvent(StateEvent.ACTION, CONSTRUCTED));
-            Assert.assertEquals(CONSTRUCTING, stateMachine.currentStateName);
+            Assert.assertEquals(CONSTRUCTING, stateMachine.currentState.name);
         }
 
         [Test]
@@ -139,7 +143,7 @@ package robotlegs.bender.util.statemachine.tests.cases {
             var stateMachine:StateMachine = new StateMachine(eventDispatcher);
             fsmInjector = new FSMInjector(FSM_ONE_STATE);
             fsmInjector.inject(stateMachine);
-            Assert.assertEquals("State should be starting", STARTING, stateMachine.currentStateName);
+            Assert.assertEquals("State should be starting", STARTING, stateMachine.currentState.name);
         }
 
         [Test]
@@ -149,7 +153,7 @@ package robotlegs.bender.util.statemachine.tests.cases {
             fsmInjector.inject(stateMachine);
 
             eventDispatcher.dispatchEvent(new StateEvent(StateEvent.ACTION, STARTED));
-            Assert.assertEquals("State should be starting", STARTING, stateMachine.currentStateName);
+            Assert.assertEquals("State should be starting", STARTING, stateMachine.currentState.name);
         }
 
         [Test(async)]
@@ -161,7 +165,7 @@ package robotlegs.bender.util.statemachine.tests.cases {
             eventDispatcher.dispatchEvent(new StateEvent(StateEvent.ACTION, STARTED, data));
         }
 
-        private static function handleStateChange(event:StateEvent):void {
+        private static function handleStateChange(event:StateEvent, pass:Object):void {
             Assert.assertTrue(event.data.value == "someData");
         }
     }

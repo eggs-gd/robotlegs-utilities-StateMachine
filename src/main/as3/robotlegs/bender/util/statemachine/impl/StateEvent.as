@@ -13,17 +13,20 @@ package robotlegs.bender.util.statemachine.impl {
         public static const ACTION:String = "action";
         public static const CANCEL:String = "cancel";
 
-        public var action:String;
-        public var data:Object;
+        private var _action:String;
+        public function get action():String { return _action; }
 
-        public function StateEvent(eventType:String, action:String = null, data:Object = null) {
-            this.action = action;
-            this.data = data;
+        private var _data:Object;
+        public function get data():Object { return _data; }
+
+        public function StateEvent(eventType:String, action:String, data:Object = null) {
+            _action = action;
+            _data = data;
             super(eventType, false, false);
         }
 
         override public function clone():Event {
-            return new StateEvent(type, action, data);
+            return new StateEvent(type, _action, _data);
         }
     }
 }
