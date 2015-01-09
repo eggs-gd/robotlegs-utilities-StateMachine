@@ -15,7 +15,6 @@ package robotlegs.bender.util.statemachine.events {
         public static const TRANSITION_CANCEL:String = "robotlegs.bender.util.statemachine.events.StateEvent.TRANSITION_CANCEL";
         public static const TRANSITION_COMPLETE:String = "robotlegs.bender.util.statemachine.events.StateEvent.TRANSITION_COMPLETE";
 
-        public static const STATE_COMPLETE:String = "robotlegs.bender.util.statemachine.events.StateEvent.STATE_COMPLETE";
         public static const STATE_POP:String = "robotlegs.bender.util.statemachine.events.StateEvent.STATE_POP";
 
         /**

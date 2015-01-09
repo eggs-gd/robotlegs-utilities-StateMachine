@@ -52,9 +52,9 @@ package robotlegs.bender.util.fsmInjector.impl {
                 var xmlTransition:XML = transitions[i];
                 var transition:ITransition = new Transition(
                         String(xmlTransition.@action),
-                        String(xmlTransition.@cancel),
                         String(xmlTransition.@target),
-                        String(xmlTransition.@complete)
+                        String(xmlTransition.@complete),
+                        String(xmlTransition.@cancel)
                 );
                 state.addTransition(transition);
             }
@@ -120,7 +120,7 @@ package robotlegs.bender.util.fsmInjector.impl {
             }
 
             // Register the StateMachine with the facade
-            stateMachine.onRegister();
+            stateMachine.start();
         }
 
         public function dispose():void {

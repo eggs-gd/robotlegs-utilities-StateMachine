@@ -58,7 +58,7 @@ package robotlegs.bender.util.statemachine.impl {
         //=====================================================================
 
         /** @inheritDoc */
-        public function onRegister():void {
+        public function start():void {
             if (_initialState) {
                 _pendingState = _initialState;
                 completeState();
@@ -68,13 +68,7 @@ package robotlegs.bender.util.statemachine.impl {
         }
 
         /** @inheritDoc */
-        public function onRemove():void {
-        }
-
-        /** @inheritDoc */
         public function dispose():void {
-            onRemove();
-
             _eventDispatcher = null;
             _initialState = null;
 
@@ -93,11 +87,12 @@ package robotlegs.bender.util.statemachine.impl {
                 return false;
             }
 
-            addState(state);
+            _states.push(state);
+            _statesMap[state.name] = state;
 
             if (initial) {
                 if (_initialState) {
-                    throw new ArgumentError("Cant be more than one initial states");
+                    throw new ArgumentError("Can't be more than one initial state");
                 } else{
                     _initialState = state;
                 }
@@ -113,7 +108,9 @@ package robotlegs.bender.util.statemachine.impl {
                 return false;
             }
 
-            delState(state);
+            _states.splice(_states.indexOf(state), 1);
+            delete _statesMap[state.name];
+
             return true;
         }
 
@@ -217,17 +214,6 @@ package robotlegs.bender.util.statemachine.impl {
 
             // Notify the app generally that the state changed and what the new state is
             _eventDispatcher.dispatchEvent(new StateEvent(StateEvent.TRANSITION_COMPLETE, state));
-            _eventDispatcher.dispatchEvent(new StateEvent(StateEvent.STATE_COMPLETE, state));
-        }
-
-        private function addState(state:IState):void {
-            _states.push(state);
-            _statesMap[state.name] = state;
-        }
-
-        private function delState(state:IState):void {
-            _states.splice(_states.indexOf(state), 1);
-            delete _statesMap[state.name];
         }
 
         //=====================================================================
