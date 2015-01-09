@@ -14,15 +14,19 @@ package robotlegs.bender.util.statemachine.impl {
      */
     public class State implements IState {
 
+        /** @inheritDoc */
         public function get name():String { return _name; }
         private var _name:String;
 
+        /** @inheritDoc */
         public function get entering():String { return _entering; }
         private var _entering:String;
 
+        /** @inheritDoc */
         public function get exiting():String { return _exiting; }
         private var _exiting:String;
 
+        /** @inheritDoc */
         public function get complete():String { return _complete; }
         private var _complete:String;
 
@@ -30,6 +34,11 @@ package robotlegs.bender.util.statemachine.impl {
         public function get transitions():Vector.<ITransition> { return _transitions.concat(); }
         private var _transitions:Vector.<ITransition>;
         private var _transitionsMap:Object; // {action:transition}
+
+        /** @inheritDoc */
+        public function get popActions():Vector.<String> { return _popActions.concat(); }
+        private var _popActions:Vector.<String>;
+
 
         /**
          * Constructor.
@@ -45,8 +54,19 @@ package robotlegs.bender.util.statemachine.impl {
             _exiting = exiting;
             _complete = complete;
 
+            _popActions = new <String>[];
+
             _transitions = new <ITransition>[];
             _transitionsMap = {};
+        }
+
+        /** @inheritDoc */
+        public function addPopAction(action:String):Boolean {
+            if (_popActions.indexOf(action) < 0 ) {
+                _popActions.push(action);
+                return true;
+            }
+            return false;
         }
 
         /** @inheritDoc */

@@ -4,9 +4,9 @@ package robotlegs.bender.util.statemachine.api {
      */
     public interface IStateMachine {
 
-        function get currentState():IState
+        function get state():IState
         function get pendingState():IState
-        function get currentTransition():ITransition;
+        function get transition():ITransition;
 
         /**
          * Returns clone of history list

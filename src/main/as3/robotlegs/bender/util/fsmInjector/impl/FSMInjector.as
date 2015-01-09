@@ -58,6 +58,15 @@ package robotlegs.bender.util.fsmInjector.impl {
                 );
                 state.addTransition(transition);
             }
+
+            // Create popActions
+            var popActions:XMLList = xmlState..pop as XMLList;
+            for (i = 0; i < popActions.length(); i++) {
+                var xmlPopAction:XML = popActions[i];
+                var popAction:String = String(xmlPopAction.@action);
+                state.addPopAction(popAction);
+            }
+
             return state;
         }
 

@@ -28,6 +28,18 @@ package robotlegs.bender.util.statemachine.api {
         function get transitions():Vector.<ITransition>;
 
         /**
+         * List of event names for pop back in state history
+         */
+        function get popActions():Vector.<String>;
+
+        /**
+         * Add action for pop up state
+         * @param action
+         * @return true if added
+         */
+        function addPopAction(action:String):Boolean;
+
+        /**
          * checks if state can start transition
          * @param action
          * @return

@@ -28,35 +28,31 @@ package robotlegs.bender.util.statemachine.tests.cases {
                 </fsm>;
 
         private var eventDispatcher:IEventDispatcher;
-        private var fsmInjector:FSMInjector;
         private var stateMachine:StateMachine;
 
         [Before]
         public function runBeforeEachTest():void {
             eventDispatcher = new EventDispatcher();
-            fsmInjector = new FSMInjector(FSM_ONE_STATE);
             stateMachine = new StateMachine(eventDispatcher);
-            fsmInjector.inject(stateMachine);
+            new FSMInjector(FSM_ONE_STATE).inject(stateMachine);
         }
 
         [After]
         public function runAfterEachTest():void {
-            fsmInjector = null;
             eventDispatcher = null;
-            fsmInjector = null;
             stateMachine = null;
         }
 
 
         [Test]
         public function singleStateInConfigurationShouldBeAtThatStateInitially():void {
-            Assert.assertEquals("State should be starting", STARTING, stateMachine.currentState.name);
+            Assert.assertEquals("State should be starting", STARTING, stateMachine.state.name);
         }
 
         [Test]
         public function singleStateInConfigurationShouldStayInStateOnCompletionEvent():void {
             eventDispatcher.dispatchEvent(new Event(STARTED));
-            Assert.assertEquals("State should be starting", STARTING, stateMachine.currentState.name);
+            Assert.assertEquals("State should be starting", STARTING, stateMachine.state.name);
         }
     }
 }

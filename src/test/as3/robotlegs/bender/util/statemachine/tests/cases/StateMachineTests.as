@@ -4,13 +4,10 @@ package robotlegs.bender.util.statemachine.tests.cases {
     import flash.events.IEventDispatcher;
 
     import org.flexunit.Assert;
-    import org.flexunit.async.Async;
 
     import robotlegs.bender.util.fsmInjector.impl.FSMInjector;
     import robotlegs.bender.util.statemachine.events.Notification;
-    import robotlegs.bender.util.statemachine.events.StateEvent;
     import robotlegs.bender.util.statemachine.impl.StateMachine;
-    import robotlegs.bender.util.statemachine.events.TransitionEvent;
 
 
     public class StateMachineTests {
@@ -20,7 +17,6 @@ package robotlegs.bender.util.statemachine.tests.cases {
 
         private static const CONSTRUCTING:String = "state/constructing";
         private static const CONSTRUCT:String = "event/construct";
-        private static const CONSTRUCT_ENTERING:String = "action/construct/entering";
         private static const CONSTRUCTION_EXIT:String = "event/construction/exit";
 
         private static const CONSTRUCTED:String = "action/completed/construction";
@@ -28,6 +24,7 @@ package robotlegs.bender.util.statemachine.tests.cases {
         private static const CONSTRUCTION_FAILED:String = "action/construction/failed";
 
         private static const NAVIGATING:String = "state/navigating";
+        private static const NAVIGATE_ENTERING:String = "action/navigate/entering";
         private static const NAVIGATE:String = "event/navigate";
 
         ////////
@@ -48,7 +45,7 @@ package robotlegs.bender.util.statemachine.tests.cases {
                     <!-- DOING SOME WORK -->
                     <state  name={CONSTRUCTING}
                             complete={CONSTRUCT}
-                            entering={CONSTRUCT_ENTERING}
+
                             exiting={CONSTRUCTION_EXIT} >
 
                         <transition action={CONSTRUCTED} cancel={CONSTRUCTED_CANCEL} target={NAVIGATING}/>
@@ -56,7 +53,7 @@ package robotlegs.bender.util.statemachine.tests.cases {
                     </state>
 
                     <!-- READY TO ACCEPT BROWSER OR USER NAVIGATION -->
-                    <state name={NAVIGATING} complete={NAVIGATE}/>
+                    <state name={NAVIGATING} entering={NAVIGATE_ENTERING} complete={NAVIGATE}/>
 
                     <!-- REPORT FAILURE FROM ANY STATE -->
                     <state name={FAILING} complete={FAIL}/>
@@ -82,47 +79,47 @@ package robotlegs.bender.util.statemachine.tests.cases {
         [Test]
         public function fsmIsInitialized():void {
             Assert.assertEquals(true, stateMachine is StateMachine);
-            Assert.assertEquals(STARTING, stateMachine.currentState.name);
+            Assert.assertEquals(STARTING, stateMachine.state.name);
         }
 
         [Test]
         public function advanceToNextState():void {
             eventDispatcher.dispatchEvent(new Event(STARTED));
-            Assert.assertEquals(CONSTRUCTING, stateMachine.currentState.name);
+            Assert.assertEquals(CONSTRUCTING, stateMachine.state.name);
         }
 
         [Test]
         public function constructionStateFailure():void {
             eventDispatcher.dispatchEvent(new Event(STARTED));
-            Assert.assertEquals(CONSTRUCTING, stateMachine.currentState.name);
+            Assert.assertEquals(CONSTRUCTING, stateMachine.state.name);
 
             eventDispatcher.dispatchEvent(new Event(CONSTRUCTION_FAILED));
-            Assert.assertEquals(FAILING, stateMachine.currentState.name);
+            Assert.assertEquals(FAILING, stateMachine.state.name);
         }
 
         [Test]
         public function stateMachineComplete():void {
             eventDispatcher.dispatchEvent(new Event(STARTED));
-            Assert.assertEquals(CONSTRUCTING, stateMachine.currentState.name);
+            Assert.assertEquals(CONSTRUCTING, stateMachine.state.name);
 
             eventDispatcher.dispatchEvent(new Event(CONSTRUCTED));
-            Assert.assertEquals(NAVIGATING, stateMachine.currentState.name);
+            Assert.assertEquals(NAVIGATING, stateMachine.state.name);
         }
 
         [Test]
         public function cancelStateChange():void {
             eventDispatcher.dispatchEvent(new Event(STARTED));
-            Assert.assertEquals(CONSTRUCTING, stateMachine.currentState.name);
+            Assert.assertEquals(CONSTRUCTING, stateMachine.state.name);
 
             //listen for CONSTRUCTION_EXIT and block transition to next state
-            eventDispatcher.addEventListener(CONSTRUCTION_EXIT, constructionExitGuard);
+            eventDispatcher.addEventListener(NAVIGATE_ENTERING, navigateEnterGuard);
 
             //attempt to complete construction
             eventDispatcher.dispatchEvent(new Event(CONSTRUCTED));
-            Assert.assertEquals(CONSTRUCTING, stateMachine.currentState.name);
+            Assert.assertEquals(CONSTRUCTING, stateMachine.state.name);
         }
 
-        private function constructionExitGuard(event:Notification):void {
+        private function navigateEnterGuard(event:Notification):void {
             eventDispatcher.dispatchEvent(new Event(CONSTRUCTED_CANCEL));
         }
     }
