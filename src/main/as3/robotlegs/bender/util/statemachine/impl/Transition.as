@@ -4,6 +4,8 @@ package robotlegs.bender.util.statemachine.impl {
 
     public class Transition implements ITransition {
 
+        public static const INSTANT_TRANSITION:String = "robotlegs.bender.util.statemachine.impl.Transition.INSTANT_TRANSITION";
+
         /** @inheritDoc */
         public function get action():String { return _action; }
         private var _action:String;
@@ -20,7 +22,10 @@ package robotlegs.bender.util.statemachine.impl {
         public function get complete():String { return _complete; }
         private var _complete:String;
 
-        public function Transition(action:String, cancel:String, target:String, complete:String = "") {
+        /** @inheritDoc */
+        public function get isInstant():Boolean { return complete == INSTANT_TRANSITION; }
+
+        public function Transition(action:String, cancel:String, target:String, complete:String = INSTANT_TRANSITION) {
             _action = action;
             _cancel = cancel;
             _target = target;

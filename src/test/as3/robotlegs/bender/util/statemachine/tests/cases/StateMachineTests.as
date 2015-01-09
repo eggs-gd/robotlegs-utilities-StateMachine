@@ -6,7 +6,7 @@ package robotlegs.bender.util.statemachine.tests.cases {
     import org.flexunit.Assert;
 
     import robotlegs.bender.util.fsmInjector.impl.FSMInjector;
-    import robotlegs.bender.util.statemachine.events.Notification;
+    import robotlegs.bender.util.statemachine.events.StateEvent;
     import robotlegs.bender.util.statemachine.impl.StateMachine;
 
 
@@ -36,26 +36,26 @@ package robotlegs.bender.util.statemachine.tests.cases {
         private static const FSM:XML =
                 <fsm initial={STARTING}>
 
-                    <!-- THE INITIAL STATE -->
+                    <!-- The simple state. No guards, no addition events fired -->
                     <state name={STARTING}>
                         <transition action={STARTED} target={CONSTRUCTING}/>
                         <transition action={START_FAILED} target={FAILING}/>
                     </state>
 
-                    <!-- DOING SOME WORK -->
+                    <!-- This state fires complete and exiting events. Can be guarded at "exiting"-->
                     <state  name={CONSTRUCTING}
                             complete={CONSTRUCT}
+                            exiting={CONSTRUCTION_EXIT}>
 
-                            exiting={CONSTRUCTION_EXIT} >
-
+                        <!-- This transition can be cancelled by firing new Event(CONSTRUCTED_CANCEL) -->
                         <transition action={CONSTRUCTED} cancel={CONSTRUCTED_CANCEL} target={NAVIGATING}/>
                         <transition action={CONSTRUCTION_FAILED} target={FAILING}/>
                     </state>
 
-                    <!-- READY TO ACCEPT BROWSER OR USER NAVIGATION -->
+                    <!-- This state can be guarded at entering phase and waiting for external event for complete -->
                     <state name={NAVIGATING} entering={NAVIGATE_ENTERING} complete={NAVIGATE}/>
 
-                    <!-- REPORT FAILURE FROM ANY STATE -->
+                    <!-- Other simple state -->
                     <state name={FAILING} complete={FAIL}/>
 
                 </fsm>;
@@ -119,7 +119,7 @@ package robotlegs.bender.util.statemachine.tests.cases {
             Assert.assertEquals(CONSTRUCTING, stateMachine.state.name);
         }
 
-        private function navigateEnterGuard(event:Notification):void {
+        private function navigateEnterGuard(event:StateEvent):void {
             eventDispatcher.dispatchEvent(new Event(CONSTRUCTED_CANCEL));
         }
     }

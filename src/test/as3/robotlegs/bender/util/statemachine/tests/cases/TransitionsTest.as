@@ -6,7 +6,7 @@ package robotlegs.bender.util.statemachine.tests.cases {
     import org.flexunit.Assert;
 
     import robotlegs.bender.util.fsmInjector.impl.FSMInjector;
-    import robotlegs.bender.util.statemachine.events.Notification;
+    import robotlegs.bender.util.statemachine.events.StateEvent;
     import robotlegs.bender.util.statemachine.impl.StateMachine;
 
 

@@ -1,30 +1,37 @@
-/*
- ADAPTED FOR ROBOTLEGS FROM:
- PureMVC AS3 Utility - StateMachine
- Copyright (c) 2008 Neil Manuell, Cliff Hall
- Your reuse is governed by the Creative Commons Attribution 3.0 License
+/**
+ * Created by Dukobpa3 on 09.01.2015.
  */
 package robotlegs.bender.util.statemachine.events {
     import flash.events.Event;
 
+    import robotlegs.bender.util.statemachine.api.IState;
+
 
     /**
-     * Event about current|pending state's progress
+     * Event fired from SM to "Big World"
      */
     public class StateEvent extends Event {
-        public static const COMPLETE:String = "robotlegs.bender.util.statemachine.impl.StateEvent.COMPLETE";
-        public static const BACK:String = "robotlegs.bender.util.statemachine.impl.StateEvent.BACK";
+        public static const TRANSITION_START:String = "robotlegs.bender.util.statemachine.events.StateEvent.TRANSITION_START";
+        public static const TRANSITION_CANCEL:String = "robotlegs.bender.util.statemachine.events.StateEvent.TRANSITION_CANCEL";
+        public static const TRANSITION_COMPLETE:String = "robotlegs.bender.util.statemachine.events.StateEvent.TRANSITION_COMPLETE";
 
-        private var _action:String;
-        public function get action():String { return _action; }
+        public static const STATE_COMPLETE:String = "robotlegs.bender.util.statemachine.events.StateEvent.STATE_COMPLETE";
+        public static const STATE_POP:String = "robotlegs.bender.util.statemachine.events.StateEvent.STATE_POP";
 
-        public function StateEvent(eventType:String, action:String) {
-            _action = action;
-            super(eventType, false, false);
+        /**
+         * Parent state of this event
+         */
+        public function get state():IState { return _state; }
+        private var _state:IState;
+
+
+        public function StateEvent(eventType:String, state:IState = null) {
+            _state = state;
+            super(eventType);
         }
 
         override public function clone():Event {
-            return new StateEvent(type, _action);
+            return new StateEvent(type, state);
         }
     }
 }
