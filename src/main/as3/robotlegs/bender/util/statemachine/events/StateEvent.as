@@ -24,7 +24,7 @@ package robotlegs.bender.util.statemachine.events {
         private var _state:IState;
 
 
-        public function StateEvent(eventType:String, state:IState = null) {
+        public function StateEvent(eventType:String, state:IState) {
             _state = state;
             super(eventType);
         }

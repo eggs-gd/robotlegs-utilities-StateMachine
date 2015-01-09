@@ -66,6 +66,8 @@ package robotlegs.bender.util.statemachine.tests.cases {
         [Before]
         public function runBeforeEachTest():void {
             eventDispatcher = new EventDispatcher();
+            eventDispatcher.addEventListener(StateEvent.TRANSITION_START, onTransitionStart);
+
             stateMachine = new StateMachine(eventDispatcher);
             new FSMInjector(FSM).inject(stateMachine);
         }
@@ -117,6 +119,10 @@ package robotlegs.bender.util.statemachine.tests.cases {
             //attempt to complete construction
             eventDispatcher.dispatchEvent(new Event(CONSTRUCTED));
             Assert.assertEquals(CONSTRUCTING, stateMachine.state.name);
+        }
+
+        private function onTransitionStart(event:StateEvent):void {
+            trace(event.state.name);
         }
 
         private function navigateEnterGuard(event:StateEvent):void {

@@ -76,6 +76,12 @@
             <version>${flexmojos.version}</version>
             <type>swc</type>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.adobe.flex.framework.air</groupId>
+                    <artifactId>airframework</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- Flexunit is external for flexunit-support-->
         <dependency>
