@@ -52,6 +52,7 @@ package robotlegs.bender.util.fsmInjector.impl {
                 var xmlTransition:XML = transitions[i];
                 var transition:ITransition = new Transition(
                         String(xmlTransition.@action),
+                        String(xmlTransition.@cancel),
                         String(xmlTransition.@target),
                         String(xmlTransition.@complete)
                 );

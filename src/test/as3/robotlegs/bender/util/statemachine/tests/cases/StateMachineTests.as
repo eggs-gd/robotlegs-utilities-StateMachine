@@ -1,4 +1,5 @@
 package robotlegs.bender.util.statemachine.tests.cases {
+    import flash.events.Event;
     import flash.events.EventDispatcher;
     import flash.events.IEventDispatcher;
 
@@ -6,23 +7,26 @@ package robotlegs.bender.util.statemachine.tests.cases {
     import org.flexunit.async.Async;
 
     import robotlegs.bender.util.fsmInjector.impl.FSMInjector;
-    import robotlegs.bender.util.statemachine.impl.StateEvent;
+    import robotlegs.bender.util.statemachine.events.Notification;
+    import robotlegs.bender.util.statemachine.events.StateEvent;
     import robotlegs.bender.util.statemachine.impl.StateMachine;
-    import robotlegs.bender.util.statemachine.impl.TransitionEvent;
+    import robotlegs.bender.util.statemachine.events.TransitionEvent;
 
 
     public class StateMachineTests {
         private static const STARTING:String = "state/starting";
-        private static const START:String = "event/start";
-        private static const START_ENTERING:String = "action/start/entering";
         private static const STARTED:String = "action/completed/start";
         private static const START_FAILED:String = "action/start/failed";
+
         private static const CONSTRUCTING:String = "state/constructing";
         private static const CONSTRUCT:String = "event/construct";
         private static const CONSTRUCT_ENTERING:String = "action/construct/entering";
-        private static const CONSTRUCTED:String = "action/completed/construction";
         private static const CONSTRUCTION_EXIT:String = "event/construction/exit";
-        private static const CONSTRUCTION_FAILED:String = "action/contruction/failed";
+
+        private static const CONSTRUCTED:String = "action/completed/construction";
+        private static const CONSTRUCTED_CANCEL:String = "action/cancel/construction";
+        private static const CONSTRUCTION_FAILED:String = "action/construction/failed";
+
         private static const NAVIGATING:String = "state/navigating";
         private static const NAVIGATE:String = "event/navigate";
 
@@ -31,14 +35,7 @@ package robotlegs.bender.util.statemachine.tests.cases {
         ///////
         private static const FAILING:String = "state/failing";
         private static const FAIL:String = "event/fail";
-        private static const FSM_ONE_STATE:XML =
-                <fsm initial={STARTING}>
 
-                    <!-- THE INITIAL STATE -->
-                    <state name={STARTING} entering={START_ENTERING}>
-
-                    </state>
-                </fsm>;
         private static const FSM:XML =
                 <fsm initial={STARTING}>
 
@@ -54,7 +51,7 @@ package robotlegs.bender.util.statemachine.tests.cases {
                             entering={CONSTRUCT_ENTERING}
                             exiting={CONSTRUCTION_EXIT} >
 
-                        <transition action={CONSTRUCTED} target={NAVIGATING}/>
+                        <transition action={CONSTRUCTED} cancel={CONSTRUCTED_CANCEL} target={NAVIGATING}/>
                         <transition action={CONSTRUCTION_FAILED} target={FAILING}/>
                     </state>
 
@@ -67,109 +64,66 @@ package robotlegs.bender.util.statemachine.tests.cases {
                 </fsm>;
 
         private var eventDispatcher:IEventDispatcher;
-        private var fsmInjector:FSMInjector;
+        private var stateMachine:StateMachine;
 
         [Before]
         public function runBeforeEachTest():void {
             eventDispatcher = new EventDispatcher();
-            fsmInjector = new FSMInjector(FSM);
+            stateMachine = new StateMachine(eventDispatcher);
+            new FSMInjector(FSM).inject(stateMachine);
         }
 
         [After]
         public function runAfterEachTest():void {
-            fsmInjector = null;
+            eventDispatcher = null;
+            stateMachine = null;
         }
 
         [Test]
         public function fsmIsInitialized():void {
-            var stateMachine:StateMachine = new StateMachine(eventDispatcher);
-            fsmInjector.inject(stateMachine);
             Assert.assertEquals(true, stateMachine is StateMachine);
             Assert.assertEquals(STARTING, stateMachine.currentState.name);
         }
 
         [Test]
         public function advanceToNextState():void {
-            var stateMachine:StateMachine = new StateMachine(eventDispatcher);
-            fsmInjector.inject(stateMachine);
-
-            eventDispatcher.dispatchEvent(new StateEvent(StateEvent.ACTION, STARTED));
+            eventDispatcher.dispatchEvent(new Event(STARTED));
             Assert.assertEquals(CONSTRUCTING, stateMachine.currentState.name);
         }
 
         [Test]
         public function constructionStateFailure():void {
-            var stateMachine:StateMachine = new StateMachine(eventDispatcher);
-            fsmInjector.inject(stateMachine);
-
-            eventDispatcher.dispatchEvent(new StateEvent(StateEvent.ACTION, STARTED));
+            eventDispatcher.dispatchEvent(new Event(STARTED));
             Assert.assertEquals(CONSTRUCTING, stateMachine.currentState.name);
 
-            eventDispatcher.dispatchEvent(new StateEvent(StateEvent.ACTION, CONSTRUCTION_FAILED));
+            eventDispatcher.dispatchEvent(new Event(CONSTRUCTION_FAILED));
             Assert.assertEquals(FAILING, stateMachine.currentState.name);
         }
 
         [Test]
         public function stateMachineComplete():void {
-            var stateMachine:StateMachine = new StateMachine(eventDispatcher);
-            fsmInjector.inject(stateMachine);
-
-            eventDispatcher.dispatchEvent(new StateEvent(StateEvent.ACTION, STARTED));
+            eventDispatcher.dispatchEvent(new Event(STARTED));
             Assert.assertEquals(CONSTRUCTING, stateMachine.currentState.name);
 
-            eventDispatcher.dispatchEvent(new StateEvent(StateEvent.ACTION, CONSTRUCTED));
+            eventDispatcher.dispatchEvent(new Event(CONSTRUCTED));
             Assert.assertEquals(NAVIGATING, stateMachine.currentState.name);
         }
 
         [Test]
         public function cancelStateChange():void {
-            var stateMachine:StateMachine = new StateMachine(eventDispatcher);
-            fsmInjector.inject(stateMachine);
-
-            eventDispatcher.dispatchEvent(new StateEvent(StateEvent.ACTION, STARTED));
+            eventDispatcher.dispatchEvent(new Event(STARTED));
             Assert.assertEquals(CONSTRUCTING, stateMachine.currentState.name);
 
             //listen for CONSTRUCTION_EXIT and block transition to next state
-            eventDispatcher.addEventListener(CONSTRUCTION_EXIT,
-                    function (event:StateEvent):void {
-                        eventDispatcher.dispatchEvent(new TransitionEvent(TransitionEvent.CANCEL, stateMachine.currentState.name));
-                    }
-            );
+            eventDispatcher.addEventListener(CONSTRUCTION_EXIT, constructionExitGuard);
 
             //attempt to complete construction
-            eventDispatcher.dispatchEvent(new StateEvent(StateEvent.ACTION, CONSTRUCTED));
+            eventDispatcher.dispatchEvent(new Event(CONSTRUCTED));
             Assert.assertEquals(CONSTRUCTING, stateMachine.currentState.name);
         }
 
-        [Test]
-        public function singleStateInConfigurationShouldBeAtThatStateInitially():void {
-            var stateMachine:StateMachine = new StateMachine(eventDispatcher);
-            fsmInjector = new FSMInjector(FSM_ONE_STATE);
-            fsmInjector.inject(stateMachine);
-            Assert.assertEquals("State should be starting", STARTING, stateMachine.currentState.name);
-        }
-
-        [Test]
-        public function singleStateInConfigurationShouldStayInStateOnCompletionEvent():void {
-            var stateMachine:StateMachine = new StateMachine(eventDispatcher);
-            fsmInjector = new FSMInjector(FSM_ONE_STATE);
-            fsmInjector.inject(stateMachine);
-
-            eventDispatcher.dispatchEvent(new StateEvent(StateEvent.ACTION, STARTED));
-            Assert.assertEquals("State should be starting", STARTING, stateMachine.currentState.name);
-        }
-
-        [Test(async)]
-        public function stateTransitionPassesData():void {
-            var stateMachine:StateMachine = new StateMachine(eventDispatcher);
-            var data:Object = {value: "someData"};
-            fsmInjector.inject(stateMachine);
-            Async.handleEvent(this, eventDispatcher, StateEvent.ACTION, handleStateChange);
-            eventDispatcher.dispatchEvent(new StateEvent(StateEvent.ACTION, STARTED, data));
-        }
-
-        private static function handleStateChange(event:StateEvent, pass:Object):void {
-            Assert.assertTrue(event.data.value == "someData");
+        private function constructionExitGuard(event:Notification):void {
+            eventDispatcher.dispatchEvent(new Event(CONSTRUCTED_CANCEL));
         }
     }
 }

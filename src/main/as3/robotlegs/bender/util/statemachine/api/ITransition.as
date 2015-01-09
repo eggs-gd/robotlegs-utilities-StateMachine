@@ -7,6 +7,11 @@ package robotlegs.bender.util.statemachine.api {
         function get action():String;
 
         /**
+         * Notification which init cancelling this transition
+         */
+        function get cancel():String;
+
+        /**
          * Target state of this transition
          */
         function get target():String;

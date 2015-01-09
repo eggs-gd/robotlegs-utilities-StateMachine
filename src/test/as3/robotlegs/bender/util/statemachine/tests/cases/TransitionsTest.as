@@ -1,13 +1,13 @@
 package robotlegs.bender.util.statemachine.tests.cases {
+    import flash.events.Event;
     import flash.events.EventDispatcher;
     import flash.events.IEventDispatcher;
 
     import org.flexunit.Assert;
 
     import robotlegs.bender.util.fsmInjector.impl.FSMInjector;
-    import robotlegs.bender.util.statemachine.impl.StateEvent;
+    import robotlegs.bender.util.statemachine.events.Notification;
     import robotlegs.bender.util.statemachine.impl.StateMachine;
-    import robotlegs.bender.util.statemachine.impl.TransitionEvent;
 
 
     public class TransitionsTest {
@@ -29,20 +29,19 @@ package robotlegs.bender.util.statemachine.tests.cases {
         </fsm>;
 
         private var eventDispatcher:IEventDispatcher;
-        private var fsmInjector:FSMInjector;
         private var stateMachine:StateMachine;
 
         [Before]
         public function runBeforeEachTest():void {
             eventDispatcher = new EventDispatcher();
-            fsmInjector = new FSMInjector(FSM);
             stateMachine = new StateMachine(eventDispatcher);
-            fsmInjector.inject(stateMachine);
+            new FSMInjector(FSM).inject(stateMachine);
         }
 
         [After]
         public function runAfterEachTest():void {
-            fsmInjector = null;
+            eventDispatcher = null;
+            stateMachine = null;
         }
 
         [Test]
@@ -53,17 +52,19 @@ package robotlegs.bender.util.statemachine.tests.cases {
 
         [Test]
         public function pausedNextState():void {
-            eventDispatcher.dispatchEvent(new StateEvent(StateEvent.ACTION, ACTION_READY));
-            Assert.assertNull(STATE_INIT, stateMachine.currentState);
+            Assert.assertEquals(STATE_INIT, stateMachine.currentState.name);
+
+            eventDispatcher.dispatchEvent(new Event(ACTION_READY));
+            //Assert.assertNull(stateMachine.currentState);
             Assert.assertEquals(STATE_READY, stateMachine.pendingState.name);
         }
 
         [Test]
         public function completeNextState():void {
-            eventDispatcher.dispatchEvent(new StateEvent(StateEvent.ACTION, ACTION_READY));
+            eventDispatcher.dispatchEvent(new Event(ACTION_READY));
             Assert.assertNull(stateMachine.currentState);
 
-            eventDispatcher.dispatchEvent(new TransitionEvent(EVENT_TRANSITION_COMPLETE, STATE_READY));
+            eventDispatcher.dispatchEvent(new Notification(EVENT_TRANSITION_COMPLETE, stateMachine.pendingState));
             Assert.assertEquals(STATE_READY, stateMachine.currentState.name);
         }
     }
