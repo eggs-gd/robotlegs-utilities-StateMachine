@@ -13,6 +13,35 @@ package robotlegs.bender.util.statemachine.impl {
         //=====================================================================
         //  History
         //=====================================================================
+        /** @inheritDoc */
+        public function get state():IState { return _state; }
+        private var _state:IState;
+
+        /** @inheritDoc */
+        public function get pendingState():IState { return _pendingState; } // {stateName:state}
+        private var _pendingState:IState;
+
+        /** @inheritDoc */
+        public function get transition():ITransition { return _transition; }
+        private var _transition:ITransition;
+
+        /** @inheritDoc */
+        public function get history():Vector.<String> { return _history.concat(); }
+        private var _history:Vector.<String>;
+
+        //=====================================================================
+        //  Private params
+        //=====================================================================
+        private var _eventDispatcher:IEventDispatcher;
+        /** Map of States objects by name. */
+        private var _states:Vector.<IState>;
+        private var _statesMap:Object;
+        /** The initial state of the FSM. */
+        private var _initialState:IState;
+
+        //=====================================================================
+        //  Public methods
+        //=====================================================================
         /**
          *  robotlegs.bender.util.statemachine.impl.StateMachine Constructor
          * @param eventDispatcher an event dispatcher used to communicate with interested actors.
@@ -25,40 +54,6 @@ package robotlegs.bender.util.statemachine.impl {
             _statesMap = {};
         }
 
-        private var _eventDispatcher:IEventDispatcher;
-        /** Map of States objects by name. */
-        private var _states:Vector.<IState>;
-        private var _statesMap:Object;
-        /** The initial state of the FSM. */
-        private var _initialState:IState;
-
-        private var _history:Vector.<String>;
-
-        /** @inheritDoc */
-        public function get history():Vector.<String> { return _history.concat(); }
-
-        private var _state:IState;
-
-        //=====================================================================
-        //  Private params
-        //=====================================================================
-
-        /** @inheritDoc */
-        public function get state():IState { return _state; }
-
-        private var _pendingState:IState;
-
-        /** @inheritDoc */
-        public function get pendingState():IState { return _pendingState; } // {stateName:state}
-
-        private var _transition:ITransition;
-
-        /** @inheritDoc */
-        public function get transition():ITransition { return _transition; }
-
-        //=====================================================================
-        //  Public methods
-        //=====================================================================
 
         /** @inheritDoc */
         public function start():void {
@@ -223,15 +218,6 @@ package robotlegs.bender.util.statemachine.impl {
         //=====================================================================
         //  Handlers
         //=====================================================================
-
-        private function canDoTransition(action:String):Boolean {
-            if (!state || !state.hasTransition(action)) {
-                return false;
-            } else {
-                return (state.name != state.getNextState(action));
-            }
-        }
-
         private function onStateAction(event:Event):void {
             if (!transition) {
                 next(event.type);
@@ -250,15 +236,22 @@ package robotlegs.bender.util.statemachine.impl {
             completeState();
         }
 
-        //=====================================================================
-        //  Checkers
-        //=====================================================================
-
         private function onTransitionCancel(event:Event):void {
             _eventDispatcher.removeEventListener(transition.cancel, onTransitionCancel);
             _eventDispatcher.dispatchEvent(new StateEvent(StateEvent.TRANSITION_CANCEL, pendingState));
             _pendingState = null;
             _transition = null;
+        }
+
+        //=====================================================================
+        //  Checkers
+        //=====================================================================
+        private function canDoTransition(action:String):Boolean {
+            if (!state || !state.hasTransition(action)) {
+                return false;
+            } else {
+                return (state.name != state.getNextState(action));
+            }
         }
     }
 }
