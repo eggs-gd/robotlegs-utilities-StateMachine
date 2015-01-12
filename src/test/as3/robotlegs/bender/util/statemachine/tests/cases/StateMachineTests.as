@@ -66,7 +66,7 @@ package robotlegs.bender.util.statemachine.tests.cases {
         [Before]
         public function runBeforeEachTest():void {
             eventDispatcher = new EventDispatcher();
-            eventDispatcher.addEventListener(StateEvent.TRANSITION_START, onTransitionStart);
+            eventDispatcher.addEventListener(StateEvent.STATE_START, onTransitionStart);
 
             stateMachine = new StateMachine(eventDispatcher);
             new FSMInjector(FSM).inject(stateMachine);

@@ -21,7 +21,7 @@ package robotlegs.bender.util.statemachine.impl {
         private var _complete:String;
 
         /** @inheritDoc */
-        public function get isInstant():Boolean { return !complete || complete.length <= 1; }
+        public function get isInstant():Boolean { return !complete || complete == ""; }
 
         public function Transition(action:String, target:String, complete:String = "", cancel:String = "") {
             _action = action;

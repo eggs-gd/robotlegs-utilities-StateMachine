@@ -135,7 +135,6 @@ package robotlegs.bender.util.statemachine.impl {
             _pendingState = getStateByAction(action);
             _transition = state.getTransition(action);
             _eventDispatcher.addEventListener(transition.cancel, onTransitionCancel);
-            _eventDispatcher.dispatchEvent(new StateEvent(StateEvent.TRANSITION_START, pendingState));
 
             if (pendingState.entering) {
                 _eventDispatcher.dispatchEvent(new StateEvent(pendingState.entering, pendingState));
@@ -143,6 +142,8 @@ package robotlegs.bender.util.statemachine.impl {
                     return false;
                 }
             }
+
+            _eventDispatcher.dispatchEvent(new StateEvent(StateEvent.STATE_START, pendingState));
 
             for each (var trans:ITransition in state.transitions) {
                 _eventDispatcher.removeEventListener(trans.action, onStateAction);
@@ -197,11 +198,6 @@ package robotlegs.bender.util.statemachine.impl {
             _state = pendingState;
             _pendingState = null;
 
-            _eventDispatcher.dispatchEvent(new StateEvent(state.name, state));
-            if (state.complete) {
-                _eventDispatcher.dispatchEvent(new StateEvent(state.complete, state));
-            }
-
             _transition = null;
             for each (var trans:ITransition in state.transitions) {
                 _eventDispatcher.addEventListener(trans.action, onStateAction);
@@ -212,7 +208,10 @@ package robotlegs.bender.util.statemachine.impl {
             }
 
             // Notify the app generally that the state changed and what the new state is
-            _eventDispatcher.dispatchEvent(new StateEvent(StateEvent.TRANSITION_COMPLETE, state));
+            _eventDispatcher.dispatchEvent(new StateEvent(StateEvent.STATE_READY, state));
+            if (state.complete) {
+                _eventDispatcher.dispatchEvent(new StateEvent(state.complete, state));
+            }
         }
 
         //=====================================================================
@@ -238,7 +237,7 @@ package robotlegs.bender.util.statemachine.impl {
 
         private function onTransitionCancel(event:Event):void {
             _eventDispatcher.removeEventListener(transition.cancel, onTransitionCancel);
-            _eventDispatcher.dispatchEvent(new StateEvent(StateEvent.TRANSITION_CANCEL, pendingState));
+            _eventDispatcher.dispatchEvent(new StateEvent(StateEvent.STATE_CANCEL, pendingState));
             _pendingState = null;
             _transition = null;
         }
