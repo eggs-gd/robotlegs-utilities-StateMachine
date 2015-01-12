@@ -59,8 +59,6 @@ package robotlegs.bender.util.statemachine.tests.cases {
         private var eventsArray:Array;
 
 
-        private var timer:Timer;
-
         [Before]
         public function runBeforeEachTest():void {
             eventDispatcher = new EventDispatcher();
@@ -106,6 +104,7 @@ package robotlegs.bender.util.statemachine.tests.cases {
             eventDispatcher.dispatchEvent(new Event(ACTION_NEXT));
             eventDispatcher.dispatchEvent(new Event(STATE_NEXT_POP));
 
+            var timer:Timer;
             timer = new Timer(3000);
             timer.addEventListener(
                     TimerEvent.TIMER,
