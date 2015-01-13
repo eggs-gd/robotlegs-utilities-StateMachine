@@ -13,6 +13,8 @@ package robotlegs.bender.util.statemachine.tests.cases {
     import mx.utils.StringUtil;
 
     import org.flexunit.async.Async;
+    import org.hamcrest.assertThat;
+    import org.hamcrest.collection.array;
 
     import robotlegs.bender.util.fsmInjector.impl.FSMInjector;
     import robotlegs.bender.util.statemachine.events.StateEvent;
@@ -22,33 +24,33 @@ package robotlegs.bender.util.statemachine.tests.cases {
 
     public class StatesFlowTest {
 
-        private static const STATE_INIT:String = "state/init";
-        private static const ACTION_READY:String = "action/ready";
+        private static const STATE_ZERO:String = "state/init";
+        private static const ACTION_FIRST:String = "action/ready";
 
-        private static const STATE_READY:String = "state/ready";
-        private static const STATE_READY_ENTERING:String = "event/ready_entering";
-        private static const STATE_READY_EXITING:String = "event/ready_exiting";
-        private static const STATE_READY_COMPLETE:String = "event/ready_complete";
-        private static const ACTION_NEXT:String = "action/next";
+        private static const STATE_FIRST:String = "state/ready";
+        private static const STATE_FIRST_ENTERING:String = "event/ready_entering";
+        private static const STATE_FIRST_EXITING:String = "event/ready_exiting";
+        private static const STATE_FIRST_COMPLETE:String = "event/ready_complete";
+        private static const ACTION_SECOND:String = "action/next";
 
-        private static const STATE_NEXT:String = "state/next";
-        private static const STATE_NEXT_ENTERING:String = "event/next_entering";
-        private static const STATE_NEXT_EXITING:String = "event/next_exiting";
-        private static const STATE_NEXT_COMPLETE:String = "event/next_complete";
-        private static const STATE_NEXT_POP:String = "event/next_pop";
+        private static const STATE_SECOND:String = "state/next";
+        private static const STATE_SECOND_ENTERING:String = "event/next_entering";
+        private static const STATE_SECOND_EXITING:String = "event/next_exiting";
+        private static const STATE_SECOND_COMPLETE:String = "event/next_complete";
+        private static const STATE_SECOND_POP:String = "event/next_pop";
 
 
-        private static const FSM:XML = <fsm initial={STATE_INIT}>
-            <state name={STATE_INIT}>
-                <transition action={ACTION_READY} target={STATE_READY}/>
+        private static const FSM:XML = <fsm initial={STATE_ZERO}>
+            <state name={STATE_ZERO}>
+                <transition action={ACTION_FIRST} target={STATE_FIRST}/>
             </state>
 
-            <state name={STATE_READY} entering={STATE_READY_ENTERING} exiting={STATE_READY_EXITING} complete={STATE_READY_COMPLETE}>
-                <transition action={ACTION_NEXT} target={STATE_NEXT}/>
+            <state name={STATE_FIRST} entering={STATE_FIRST_ENTERING} exiting={STATE_FIRST_EXITING} complete={STATE_FIRST_COMPLETE}>
+                <transition action={ACTION_SECOND} target={STATE_SECOND}/>
             </state>
 
-            <state name={STATE_NEXT} entering={STATE_NEXT_ENTERING} exiting={STATE_NEXT_EXITING} complete={STATE_NEXT_COMPLETE}>
-                <pop action={STATE_NEXT_POP} />
+            <state name={STATE_SECOND} entering={STATE_SECOND_ENTERING} exiting={STATE_SECOND_EXITING} complete={STATE_SECOND_COMPLETE}>
+                <pop action={STATE_SECOND_POP} />
             </state>
 
         </fsm>;
@@ -75,14 +77,26 @@ package robotlegs.bender.util.statemachine.tests.cases {
         [Test]
         public function fsmIsInitialized():void {
             Assert.assertEquals(true, stateMachine is StateMachine);
-            Assert.assertEquals(STATE_INIT, stateMachine.state.name);
+            Assert.assertEquals(STATE_ZERO, stateMachine.state.name);
         }
 
         [Test (async, description="An async test through all flow")]
         public function flowTest():void {
 
             const matching:Array = [
-                StringUtil.substitute("{0}:{1}", STATE_READY, StateEvent.STATE_START)
+                StringUtil.substitute("state is:{0} -> {1}:{2}", STATE_ZERO, STATE_FIRST, STATE_FIRST_ENTERING),
+                StringUtil.substitute("state is:{0} -> {1}:{2}", STATE_ZERO, STATE_FIRST, StateEvent.STATE_START),
+                StringUtil.substitute("state is:{0} -> {1}:{2}", STATE_FIRST, STATE_FIRST, StateEvent.STATE_READY),
+                StringUtil.substitute("state is:{0} -> {1}:{2}", STATE_FIRST, STATE_FIRST, STATE_FIRST_COMPLETE),
+
+                StringUtil.substitute("state is:{0} -> {1}:{2}", STATE_FIRST, STATE_SECOND, STATE_SECOND_ENTERING),
+                StringUtil.substitute("state is:{0} -> {1}:{2}", STATE_FIRST, STATE_SECOND, StateEvent.STATE_START),
+                StringUtil.substitute("state is:{0} -> {1}:{2}", STATE_SECOND, STATE_SECOND, StateEvent.STATE_READY),
+                StringUtil.substitute("state is:{0} -> {1}:{2}", STATE_SECOND, STATE_SECOND, STATE_SECOND_COMPLETE),
+
+                StringUtil.substitute("state is:{0} -> {1}:{2}", STATE_SECOND, STATE_SECOND, StateEvent.STATE_POP),
+                StringUtil.substitute("state is:{0} -> {1}:{2}", STATE_SECOND, STATE_SECOND, STATE_SECOND_EXITING),
+                StringUtil.substitute("state is:{0} -> {1}:{2}", STATE_FIRST, STATE_FIRST, StateEvent.STATE_READY)
             ];
 
             eventDispatcher.addEventListener(StateEvent.STATE_START, onStateFlow);
@@ -90,19 +104,19 @@ package robotlegs.bender.util.statemachine.tests.cases {
             eventDispatcher.addEventListener(StateEvent.STATE_CANCEL, onStateFlow);
             eventDispatcher.addEventListener(StateEvent.STATE_POP, onStateFlow);
 
-            eventDispatcher.addEventListener(STATE_READY_COMPLETE, onStateFlow);
-            eventDispatcher.addEventListener(STATE_READY_ENTERING, onStateFlow);
-            eventDispatcher.addEventListener(STATE_READY_EXITING, onStateFlow);
+            eventDispatcher.addEventListener(STATE_FIRST_COMPLETE, onStateFlow);
+            eventDispatcher.addEventListener(STATE_FIRST_ENTERING, onStateFlow);
+            eventDispatcher.addEventListener(STATE_FIRST_EXITING, onStateFlow);
 
-            eventDispatcher.addEventListener(STATE_NEXT_COMPLETE, onStateFlow);
-            eventDispatcher.addEventListener(STATE_NEXT_ENTERING, onStateFlow);
-            eventDispatcher.addEventListener(STATE_NEXT_EXITING, onStateFlow);
+            eventDispatcher.addEventListener(STATE_SECOND_COMPLETE, onStateFlow);
+            eventDispatcher.addEventListener(STATE_SECOND_ENTERING, onStateFlow);
+            eventDispatcher.addEventListener(STATE_SECOND_EXITING, onStateFlow);
 
 
-            eventDispatcher.dispatchEvent(new Event(ACTION_READY));
-            eventDispatcher.dispatchEvent(new Event(ACTION_NEXT));
-            eventDispatcher.dispatchEvent(new Event(ACTION_NEXT));
-            eventDispatcher.dispatchEvent(new Event(STATE_NEXT_POP));
+            eventDispatcher.dispatchEvent(new Event(ACTION_FIRST));
+            eventDispatcher.dispatchEvent(new Event(ACTION_SECOND));
+            eventDispatcher.dispatchEvent(new Event(ACTION_SECOND));
+            eventDispatcher.dispatchEvent(new Event(STATE_SECOND_POP));
 
             var timer:Timer;
             timer = new Timer(3000);
@@ -114,15 +128,15 @@ package robotlegs.bender.util.statemachine.tests.cases {
                             3500, matching, handleTimeout ),
                     false, 0, true );
             timer.start();
-            //Assert.assertEquals(STATE_INIT, stateMachine.state.name);
         }
 
         protected function handleTimerCheckCount( event:TimerEvent, data:Object):void {
-            Assert.assertEquals(eventsArray, data);
+            assertThat(eventsArray, array(data));
+            //Assert.assertEquals(eventsArray, data);
         }
 
         protected function handleTimeout(data:Object):void {
-            Assert.assertEquals(eventsArray, data);
+            Assert.assertTrue(false);
         }
 
         private function onStateFlow(event:StateEvent):void {

@@ -191,6 +191,8 @@ package robotlegs.bender.util.statemachine.impl {
                 _eventDispatcher.addEventListener(popAction, onStateBack);
             }
 
+            _eventDispatcher.dispatchEvent(new StateEvent(StateEvent.STATE_READY, state));
+
             return true;
         }
 
