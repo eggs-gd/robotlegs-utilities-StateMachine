@@ -1,4 +1,4 @@
-package robotlegs.bender.util.statemachine.tests.cases {
+package robotlegs.bender.util.statemachine {
     import flash.events.Event;
     import flash.events.EventDispatcher;
     import flash.events.IEventDispatcher;

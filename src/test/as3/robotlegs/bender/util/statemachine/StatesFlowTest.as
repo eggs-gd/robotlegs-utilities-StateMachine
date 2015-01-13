@@ -1,7 +1,7 @@
 /**
  * Created by Dukobpa3 on 12.01.2015.
  */
-package robotlegs.bender.util.statemachine.tests.cases {
+package robotlegs.bender.util.statemachine {
     import flash.events.Event;
     import flash.events.EventDispatcher;
     import flash.events.IEventDispatcher;
@@ -118,15 +118,10 @@ package robotlegs.bender.util.statemachine.tests.cases {
             eventDispatcher.dispatchEvent(new Event(ACTION_SECOND));
             eventDispatcher.dispatchEvent(new Event(STATE_SECOND_POP));
 
+            var handler:Function = Async.asyncHandler(this, handleTimerCheckCount, 3500, matching, handleTimeout);
             var timer:Timer;
-            timer = new Timer(3000);
-            timer.addEventListener(
-                    TimerEvent.TIMER,
-                    Async.asyncHandler(
-                            this,
-                            handleTimerCheckCount,
-                            3500, matching, handleTimeout ),
-                    false, 0, true );
+            timer = new Timer(3000, 1);
+            timer.addEventListener(TimerEvent.TIMER, handler, false, 0, true );
             timer.start();
         }
 
