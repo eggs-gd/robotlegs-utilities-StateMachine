@@ -6,7 +6,7 @@
     <groupId>robotlegs.extensions</groupId>
     <artifactId>robotlegs2-stateMaschine</artifactId>
     <name>robotlegs2-stateMaschine</name>
-    <version>1.0.0</version>
+    <version>1.0.1-SNAPSHOT</version>
     <packaging>swc</packaging>
 
     <properties>
