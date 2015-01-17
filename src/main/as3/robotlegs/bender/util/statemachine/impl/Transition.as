@@ -20,11 +20,15 @@ package robotlegs.bender.util.statemachine.impl {
         public function get complete():String { return _complete; }
         private var _complete:String;
 
-        public function Transition(action:String, cancel:String, target:String, complete:String = "") {
+        /** @inheritDoc */
+        public function get isInstant():Boolean { return !complete || complete == ""; }
+
+        public function Transition(action:String, target:String, complete:String = "", cancel:String = "") {
             _action = action;
-            _cancel = cancel;
             _target = target;
+
             _complete = complete;
+            _cancel = cancel;
         }
     }
 }

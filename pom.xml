@@ -76,6 +76,12 @@
             <version>${flexmojos.version}</version>
             <type>swc</type>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.adobe.flex.framework.air</groupId>
+                    <artifactId>airframework</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- Flexunit is external for flexunit-support-->
         <dependency>
@@ -84,6 +90,21 @@
             <version>4.1.0</version>
             <type>swc</type>
             <classifier>as3</classifier>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-as3</artifactId>
+            <version>1.1</version>
+            <type>swc</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockolate</groupId>
+            <artifactId>mockolate</artifactId>
+            <version>0.12.4</version>
+            <classifier>as3</classifier>
+            <type>swc</type>
             <scope>test</scope>
         </dependency>
 

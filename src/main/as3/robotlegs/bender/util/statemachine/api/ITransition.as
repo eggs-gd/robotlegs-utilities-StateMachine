@@ -2,12 +2,12 @@ package robotlegs.bender.util.statemachine.api {
 
     public interface ITransition {
         /**
-         * Notification which init start this transition
+         * Event which init start this transition
          */
         function get action():String;
 
         /**
-         * Notification which init cancelling this transition
+         * Event which init cancelling this transition
          */
         function get cancel():String;
 
@@ -21,5 +21,10 @@ package robotlegs.bender.util.statemachine.api {
          * When empty - than transition is instant
          */
         function get complete():String;
+
+        /**
+         * This is not continuous transition
+         */
+        function get isInstant():Boolean;
     }
 }

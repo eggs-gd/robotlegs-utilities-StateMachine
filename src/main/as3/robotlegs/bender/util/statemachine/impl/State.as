@@ -1,9 +1,3 @@
-/*
- ADAPTED FOR ROBOTLEGS FROM:
- PureMVC AS3 Utility - StateMachine
- Copyright (c) 2008 Neil Manuell, Cliff Hall
- Your reuse is governed by the Creative Commons Attribution 3.0 License
- */
 package robotlegs.bender.util.statemachine.impl {
     import robotlegs.bender.util.statemachine.api.IState;
     import robotlegs.bender.util.statemachine.api.ITransition;
@@ -55,7 +49,6 @@ package robotlegs.bender.util.statemachine.impl {
             _complete = complete;
 
             _popActions = new <String>[];
-
             _transitions = new <ITransition>[];
             _transitionsMap = {};
         }

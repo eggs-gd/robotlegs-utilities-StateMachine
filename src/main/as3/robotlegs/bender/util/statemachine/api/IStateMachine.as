@@ -1,11 +1,20 @@
 package robotlegs.bender.util.statemachine.api {
-    /**
-     * @author Benoit vinay - ben@benoitvinay.com
-     */
+
     public interface IStateMachine {
 
+        /**
+         * Current state
+         */
         function get state():IState
+
+        /**
+         * Pending state if started transition
+         */
         function get pendingState():IState
+
+        /**
+         * Currently running transition
+         */
         function get transition():ITransition;
 
         /**
@@ -13,8 +22,15 @@ package robotlegs.bender.util.statemachine.api {
          */
         function get history():Vector.<String>;
 
-        function onRegister():void;
-        function onRemove():void;
+        /**
+         * Start SM flow from initial state
+         */
+        function start():void;
+
+        /**
+         * Completely destroy current SM
+         */
+        function dispose():void;
 
         /**
          * Registers the entry and exit commands for a given state.
@@ -31,7 +47,5 @@ package robotlegs.bender.util.statemachine.api {
          * @param stateName
          */
         function removeState(stateName:String):Boolean;
-
-        function dispose():void;
     }
 }

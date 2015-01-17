@@ -1,30 +1,35 @@
-/*
- ADAPTED FOR ROBOTLEGS FROM:
- PureMVC AS3 Utility - StateMachine
- Copyright (c) 2008 Neil Manuell, Cliff Hall
- Your reuse is governed by the Creative Commons Attribution 3.0 License
+/**
+ * Created by Dukobpa3 on 09.01.2015.
  */
 package robotlegs.bender.util.statemachine.events {
     import flash.events.Event;
 
+    import robotlegs.bender.util.statemachine.api.IState;
+
 
     /**
-     * Event about current|pending state's progress
+     * Event fired from SM to "Big World"
      */
     public class StateEvent extends Event {
-        public static const COMPLETE:String = "robotlegs.bender.util.statemachine.impl.StateEvent.COMPLETE";
-        public static const BACK:String = "robotlegs.bender.util.statemachine.impl.StateEvent.BACK";
+        public static const STATE_START:String = "robotlegs.bender.util.statemachine.events.StateEvent.STATE_START";
+        public static const STATE_CANCEL:String = "robotlegs.bender.util.statemachine.events.StateEvent.STATE_CANCEL";
+        public static const STATE_READY:String = "robotlegs.bender.util.statemachine.events.StateEvent.STATE_READY";
+        public static const STATE_POP:String = "robotlegs.bender.util.statemachine.events.StateEvent.STATE_POP";
 
-        private var _action:String;
-        public function get action():String { return _action; }
+        /**
+         * Parent state of this event
+         */
+        public function get state():IState { return _state; }
+        private var _state:IState;
 
-        public function StateEvent(eventType:String, action:String) {
-            _action = action;
-            super(eventType, false, false);
+
+        public function StateEvent(eventType:String, state:IState) {
+            _state = state;
+            super(eventType);
         }
 
         override public function clone():Event {
-            return new StateEvent(type, _action);
+            return new StateEvent(type, state);
         }
     }
 }

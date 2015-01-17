@@ -1,9 +1,3 @@
-/*
- ADAPTED FOR ROBOTLEGS FROM:
- PureMVC AS3 Utility - StateMachine
- Copyright (c) 2008 Neil Manuell, Cliff Hall
- Your reuse is governed by the Creative Commons Attribution 3.0 License
- */
 package robotlegs.bender.util.statemachine.impl {
     import flash.events.Event;
     import flash.events.IEventDispatcher;
@@ -11,9 +5,7 @@ package robotlegs.bender.util.statemachine.impl {
     import robotlegs.bender.util.statemachine.api.IState;
     import robotlegs.bender.util.statemachine.api.IStateMachine;
     import robotlegs.bender.util.statemachine.api.ITransition;
-    import robotlegs.bender.util.statemachine.events.Notification;
     import robotlegs.bender.util.statemachine.events.StateEvent;
-    import robotlegs.bender.util.statemachine.events.TransitionEvent;
 
 
     public class StateMachine implements IStateMachine {
@@ -22,33 +14,34 @@ package robotlegs.bender.util.statemachine.impl {
         //  History
         //=====================================================================
         /** @inheritDoc */
-        public function get history():Vector.<String> { return _history.concat(); }
-        private var _history:Vector.<String>;
-
-        /** @inheritDoc */
         public function get state():IState { return _state; }
         private var _state:IState;
 
         /** @inheritDoc */
-        public function get pendingState():IState { return _pendingState; }
+        public function get pendingState():IState { return _pendingState; } // {stateName:state}
         private var _pendingState:IState;
 
         /** @inheritDoc */
         public function get transition():ITransition { return _transition; }
         private var _transition:ITransition;
 
+        /** @inheritDoc */
+        public function get history():Vector.<String> { return _history.concat(); }
+        private var _history:Vector.<String>;
+
         //=====================================================================
         //  Private params
         //=====================================================================
         private var _eventDispatcher:IEventDispatcher;
-
         /** Map of States objects by name. */
         private var _states:Vector.<IState>;
-        private var _statesMap:Object; // {stateName:state}
-
+        private var _statesMap:Object;
         /** The initial state of the FSM. */
         private var _initialState:IState;
 
+        //=====================================================================
+        //  Public methods
+        //=====================================================================
         /**
          *  robotlegs.bender.util.statemachine.impl.StateMachine Constructor
          * @param eventDispatcher an event dispatcher used to communicate with interested actors.
@@ -61,14 +54,9 @@ package robotlegs.bender.util.statemachine.impl {
             _statesMap = {};
         }
 
-        //=====================================================================
-        //  Public methods
-        //=====================================================================
 
         /** @inheritDoc */
-        public function onRegister():void {
-            _eventDispatcher.addEventListener(StateEvent.BACK, onStateBack);
-
+        public function start():void {
             if (_initialState) {
                 _pendingState = _initialState;
                 completeState();
@@ -78,14 +66,7 @@ package robotlegs.bender.util.statemachine.impl {
         }
 
         /** @inheritDoc */
-        public function onRemove():void {
-            _eventDispatcher.removeEventListener(StateEvent.BACK, onStateBack);
-        }
-
-        /** @inheritDoc */
         public function dispose():void {
-            onRemove();
-
             _eventDispatcher = null;
             _initialState = null;
 
@@ -104,11 +85,12 @@ package robotlegs.bender.util.statemachine.impl {
                 return false;
             }
 
-            addState(state);
+            _states.push(state);
+            _statesMap[state.name] = state;
 
             if (initial) {
                 if (_initialState) {
-                    throw new ArgumentError("Cant be more than one initial states");
+                    throw new ArgumentError("Can't be more than one initial state");
                 } else{
                     _initialState = state;
                 }
@@ -124,7 +106,9 @@ package robotlegs.bender.util.statemachine.impl {
                 return false;
             }
 
-            delState(state);
+            _states.splice(_states.indexOf(state), 1);
+            delete _statesMap[state.name];
+
             return true;
         }
 
@@ -132,20 +116,15 @@ package robotlegs.bender.util.statemachine.impl {
         //  Private methods
         //=====================================================================
         private function getStateByAction(action:String):IState {
-            if (state) {
-                var transition:ITransition = state.getTransition(action);
-                if (transition) {
-                    return _statesMap[transition.target];
-                }
+            if (state && state.hasTransition(action)) {
+                return _statesMap[state.getTransition(action).target];
             }
-
             return null;
         }
 
         /**
          * Start transition to state
          * @param action
-         * @param data
          * @return true if started
          */
         private function next(action:String):Boolean {
@@ -156,14 +135,15 @@ package robotlegs.bender.util.statemachine.impl {
             _pendingState = getStateByAction(action);
             _transition = state.getTransition(action);
             _eventDispatcher.addEventListener(transition.cancel, onTransitionCancel);
-            _eventDispatcher.dispatchEvent(new TransitionEvent(TransitionEvent.START, pendingState.name));
 
             if (pendingState.entering) {
-                _eventDispatcher.dispatchEvent(new Notification(pendingState.entering, pendingState));
+                _eventDispatcher.dispatchEvent(new StateEvent(pendingState.entering, pendingState));
                 if (!pendingState) { // rejected by guard
                     return false;
                 }
             }
+
+            _eventDispatcher.dispatchEvent(new StateEvent(StateEvent.STATE_START, pendingState));
 
             for each (var trans:ITransition in state.transitions) {
                 _eventDispatcher.removeEventListener(trans.action, onStateAction);
@@ -175,7 +155,7 @@ package robotlegs.bender.util.statemachine.impl {
             _history.push(state.name);
             _state = null;
 
-            if (transition.complete == "") {
+            if (transition.isInstant) {
                 completeState();
             } else {
                 _eventDispatcher.addEventListener(transition.complete, onTransitionComplete);
@@ -187,7 +167,7 @@ package robotlegs.bender.util.statemachine.impl {
             _pendingState = _statesMap[_history.pop()];
 
             if (state.exiting) {
-                _eventDispatcher.dispatchEvent(new Notification(state.exiting, state));
+                _eventDispatcher.dispatchEvent(new StateEvent(state.exiting, state));
                 if (!pendingState) { // rejected by guard
                     return false;
                 }
@@ -211,16 +191,14 @@ package robotlegs.bender.util.statemachine.impl {
                 _eventDispatcher.addEventListener(popAction, onStateBack);
             }
 
+            _eventDispatcher.dispatchEvent(new StateEvent(StateEvent.STATE_READY, state));
+
             return true;
         }
 
         private function completeState():void {
             _state = pendingState;
             _pendingState = null;
-
-            if (state.complete) {
-                _eventDispatcher.dispatchEvent(new Notification(state.complete, state));
-            }
 
             _transition = null;
             for each (var trans:ITransition in state.transitions) {
@@ -232,18 +210,10 @@ package robotlegs.bender.util.statemachine.impl {
             }
 
             // Notify the app generally that the state changed and what the new state is
-            _eventDispatcher.dispatchEvent(new TransitionEvent(TransitionEvent.COMPLETE, state.name));
-            _eventDispatcher.dispatchEvent(new StateEvent(StateEvent.COMPLETE, state.name));
-        }
-
-        private function addState(state:IState):void {
-            _states.push(state);
-            _statesMap[state.name] = state;
-        }
-
-        private function delState(state:IState):void {
-            _states.splice(_states.indexOf(state), 1);
-            delete _statesMap[state.name];
+            _eventDispatcher.dispatchEvent(new StateEvent(StateEvent.STATE_READY, state));
+            if (state.complete) {
+                _eventDispatcher.dispatchEvent(new StateEvent(state.complete, state));
+            }
         }
 
         //=====================================================================
@@ -258,6 +228,7 @@ package robotlegs.bender.util.statemachine.impl {
         }
 
         private function onStateBack(event:Event):void {
+            _eventDispatcher.dispatchEvent(new StateEvent(StateEvent.STATE_POP, state));
             back();
         }
 
@@ -268,6 +239,7 @@ package robotlegs.bender.util.statemachine.impl {
 
         private function onTransitionCancel(event:Event):void {
             _eventDispatcher.removeEventListener(transition.cancel, onTransitionCancel);
+            _eventDispatcher.dispatchEvent(new StateEvent(StateEvent.STATE_CANCEL, pendingState));
             _pendingState = null;
             _transition = null;
         }
