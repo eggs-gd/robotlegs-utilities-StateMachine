@@ -3,7 +3,7 @@ package robotlegs.bender.util.statemachine.api {
     /**
      * Proxy for sharing basic data of sm
      */
-    public interface ISmPublicProxy {
+    public interface ISmProxy {
         /**
          * Current state
          */

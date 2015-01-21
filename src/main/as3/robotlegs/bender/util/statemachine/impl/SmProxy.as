@@ -1,9 +1,9 @@
 package robotlegs.bender.util.statemachine.impl {
-    import robotlegs.bender.util.statemachine.api.ISmPublicProxy;
+    import robotlegs.bender.util.statemachine.api.ISmProxy;
     import robotlegs.bender.util.statemachine.api.IStateMachine;
 
 
-    public class SmProxy implements ISmPublicProxy {
+    public class SmProxy implements ISmProxy {
 
         private var _sm:IStateMachine;
 
