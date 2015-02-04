@@ -134,7 +134,9 @@ package robotlegs.bender.util.statemachine.impl {
 
             _pendingState = getStateByAction(action);
             _transition = state.getTransition(action);
-            _eventDispatcher.addEventListener(transition.cancel, onTransitionCancel);
+            if (transition.cancel) {
+                _eventDispatcher.addEventListener(transition.cancel, onTransitionCancel);
+            }
 
             if (pendingState.entering) {
                 _eventDispatcher.dispatchEvent(new StateEvent(pendingState.entering, pendingState));
@@ -200,10 +202,14 @@ package robotlegs.bender.util.statemachine.impl {
          * @param silence needed for cancelling transition. If true then don't dispatch state complete
          */
         private function completeState(silence:Boolean = false):void {
+            if (transition && transition.cancel) {
+                _eventDispatcher.removeEventListener(transition.cancel, onTransitionCancel);
+            }
+
             _state = pendingState;
             _pendingState = null;
-
             _transition = null;
+
             for each (var trans:ITransition in state.transitions) {
                 _eventDispatcher.addEventListener(trans.action, onStateAction);
             }
