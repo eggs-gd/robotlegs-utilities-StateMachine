@@ -66,10 +66,12 @@ package robotlegs.bender.util.statemachine {
             Assert.assertNull(stateMachine.state);
 
             eventDispatcher.dispatchEvent(new Event(ACTION_READY_CANCEL));
-            Assert.assertEquals(STATE_READY, stateMachine.state.name);
+            Assert.assertNotNull(stateMachine.state);
+            Assert.assertEquals(STATE_INIT, stateMachine.state.name);
 
             eventDispatcher.dispatchEvent(new Event(EVENT_TRANSITION_COMPLETE));
-            Assert.assertEquals(STATE_READY, stateMachine.state.name);
+            Assert.assertNotNull(stateMachine.state);
+            Assert.assertEquals(STATE_INIT, stateMachine.state.name);
         }
     }
 }

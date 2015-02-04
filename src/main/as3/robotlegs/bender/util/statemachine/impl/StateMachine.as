@@ -196,7 +196,10 @@ package robotlegs.bender.util.statemachine.impl {
             return true;
         }
 
-        private function completeState():void {
+        /**
+         * @param silence needed for cancelling transition. If true then don't dispatch state complete
+         */
+        private function completeState(silence:Boolean = false):void {
             _state = pendingState;
             _pendingState = null;
 
@@ -207,6 +210,10 @@ package robotlegs.bender.util.statemachine.impl {
 
             for each (var popAction:String in state.popActions) {
                 _eventDispatcher.addEventListener(popAction, onStateBack);
+            }
+
+            if (silence) {
+                return;
             }
 
             // Notify the app generally that the state changed and what the new state is
@@ -223,7 +230,7 @@ package robotlegs.bender.util.statemachine.impl {
             if (!transition) {
                 next(event.type);
             } else {
-                // TODO queue
+                // TODO add states queue
             }
         }
 
@@ -238,10 +245,16 @@ package robotlegs.bender.util.statemachine.impl {
         }
 
         private function onTransitionCancel(event:Event):void {
+            _eventDispatcher.removeEventListener(transition.complete, onTransitionComplete);
             _eventDispatcher.removeEventListener(transition.cancel, onTransitionCancel);
             _eventDispatcher.dispatchEvent(new StateEvent(StateEvent.STATE_CANCEL, pendingState));
-            _pendingState = null;
-            _transition = null;
+            // TODO investigate and fix cancelling flow
+            if (state) { // it means that we already closed state but not opened next
+                _pendingState = state;
+            } else {
+                _pendingState = _statesMap[_history.pop()];
+            }
+            completeState(true);
         }
 
         //=====================================================================
